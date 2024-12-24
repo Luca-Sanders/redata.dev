@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+<url>
+  <loc>https://redata.dev/</loc>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/</loc>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/docs/</loc>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/docs/how-to-parse-xml-into-sql-or-json.html</loc>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/docs/how-to-load-multiple-xml-into-database.html</loc>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/docs/bringing-different-subtypes-of-xml-documents-to-a-generalized-form.html</loc>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/docs/creating-database-table-patches-based-on-xml.html</loc>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/docs/type-conversion-in-xml-documents.html</loc>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/docs/database-connection-configuration.html</loc>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/docs/jobs-settings.html</loc>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://redata.dev/smartxml/docs/cmd-args-and-batch-processing.html</loc>
+  <priority>0.51</priority>
+</url>
+
+
+</urlset>
