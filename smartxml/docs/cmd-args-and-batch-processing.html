@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+    <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <meta charset="utf-8">
+    <meta name="description" content="Example of using command line arguments to work with SmartXML">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script src="/js/pre-code-fix.js" defer></script>
+    <script src="//static.redata.dev/js/media-queries.js" defer></script>
+    <script src="//static.redata.dev/js/include.js" defer></script>   
+    <script src="//static.redata.dev/js/ui.js" defer></script> 
+    <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    
+    <title>SmartXML cmd arguments</title>
+</head>
+
+<body>
+    <main>
+
+        <header>
+            <include src="components/header.html"></include>
+            <div id="breadcrumb"></div>
+        </header>
+        
+        <article>
+
+            <p>Initial configuration of SmartXML is recommended to be done using the graphical interface.
+                However, for the purpose of simplifying automation of processing, the application can be run without loading the graphical interface.</p>
+
+            <ul>
+                <li>
+                    <p>Open a project with the specified name:</p>
+                    <code>
+                     .\SmartXML -proj=sample_1
+                    </code>
+                </li>
+
+                <li>
+                    <p>Open a project with the specified name and set the Job number:</p>
+                    <code>
+                        .\SmartXML -proj=sample_1 -job=2
+                    </code>
+
+                    <p>Note: specifying the Job number is important only if XML for processing is stored in the database table.</p>
+                    <p>More detailed information is available on the <a href="./jobs-settings.html">jobs-settings</a> page.
+                    </p>
+                    <p>If Job is not specified, the project will be opened with Job set to 1 by default.</p>
+                </li>
+
+                <li>
+                    <p>Open a project with the specified name, set the Job number, and automatically start parsing:</p>
+                    <code>
+                        .\SmartXML -proj=sample_1 -job=2 -start
+                    </code>
+                    <p>Note: specifying the Job number is important only if XML for processing is stored in the database table.</p>
+                    <p>More detailed information is available on the <a href="./jobs-settings.html">jobs-settings</a> page.
+                    </p>
+                    <p>If Job is not specified, the project will be opened with Job set to 1 by default.</p>
+                    <p>The <code>-start</code> flag is used exclusively when working with the database and is NOT used
+                        when processing individual files.</p>
+                </li>
+
+                <li>
+                    <p>Open the project sample_1 and substitute an XML file for processing. Wait for the button press in the interface:
+                    </p>
+                    <code>.\SmartXML.exe -proj=sample_1 -file=D:/code/SmartXML/data-samples/sample-1/example_1.xml</code>
+                </li>
+
+
+                <li>
+                    <p>Run the sample_1 project, substitute XML for processing, specify the folder to write the result (folder should exists),
+                        and the target format. Do not display the interface:</p>
+                    <code>.\SmartXML.exe -proj=sample_1 -file=D:/code/SmartXML/data-samples/sample-1/example_1.xml -outfolder=D:\test\output -format=json -noui</code>
+                    <p>Note: the target folder must exist.</p>
+                    <p>JSON and SQL formats are supported.</p>
+                </li>
+
+                <li>
+                    <p>Run the sample_1 project, substitute XML for processing, write the result to the same directory where
+                        the original XML is located, specify the target format. Do not display the interface:</p>
+                    <code>.\SmartXML.exe -proj=sample_1 -file=D:/code/SmartXML/data-samples/sample-1/example_1.xml -format=json -noui</code>
+                    <p>JSON and SQL formats are supported.</p>
+                </li>
+
+                <li>
+                    <p>The following tags can be combined with the examples above:</p>
+                    <p>By default, the parser stops when encountering unknown tags. The following command
+                        line arguments allow changing this behavior:</p>
+                    <code>.\SmartXML.exe -lu</code>
+                    <p>Log unknown tags. Add them to the interface if it is loaded:</p>
+                    <code>.\SmartXML.exe -su</code>
+                    <p>Skip unknown tags. Do not stop on them and do not add them to the interface (if it
+                        is loaded).</p>
+
+                    <p>Note: These keys may be needed if, during batch processing, XML documents may contain unknown tags,
+                        the processing of which is not critical, and there is no reason to stop the processing
+                        process, but it is enough to log and/or skip these tags.</p>
+                </li>
+
+            </ul>
+
+
+            <p>If you need assurances that the process will be restarted even in case of a possible error, you can
+                use the following bat file:</p>
+            <div style="text-align: center;">
+                <div>
+                    <pre>
+                        <code>
+                            @echo off
+                            :Start
+                            D:\code\SmartXML\SmartXML.exe -proj=name -job=1 -start
+                            :: Wait 30 seconds before restarting.
+                            TIMEOUT /T 30
+                            GOTO:Start        
+                        </code>
+                    </pre>
+                </div>
+            </div>
+        </article>
+
+
+    </main>
+
+
+    <include src="/components/footer.html"></include>
+</body>
+
+</html>

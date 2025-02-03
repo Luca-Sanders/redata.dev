@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script src="//static.redata.dev/js/include.js" defer></script>
+
+        <script src="//static.redata.dev/js/media-queries.js" defer></script>
+        <script src="//static.redata.dev/js/ui.js" defer></script>
+        <link rel="stylesheet" href="//static.redata.dev/css/global.css" />
+        <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled" />
+        <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled" />
+
+        <link rel="stylesheet" href="/css/style.css" />
+        <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+
+        <meta charset="utf-8" />
+        <meta
+            name="description"
+            content="Our company offers data processing automation services. We don't use hi-tech technologies, so our solutions are characterized by extremely high compatibility and reliability. We do not have and will never have products that require Docker or NodeJS to run."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="google-site-verification" content="8GzY0Sl_6VBykQcP_9fbdG-2GfNomcHiEFfd56BxVkc" />
+
+        <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org/",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "SmartXML",
+                        "item": "https://redata.dev/smartxml/"
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "SmartXML Docs",
+                        "item": "https://redata.dev/smartxml/docs/"
+                    }
+                ]
+            }
+        </script>
+
+        <title>ReData</title>
+    </head>
+
+    <body>
+        <main>
+            <header>
+                <include src="components/header.html"></include>
+                <div id="breadcrumb"></div>
+            </header>
+
+            <article>
+                <section id="smartxml">
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: start">
+                        <div style="flex: 1 1 300px">
+                            <h1>Easy way to parse XML</h1>
+                            <p><strong>SmartXML</strong> is a ETL solution for parsing XML files with a wide range of features.</p>
+                            <p>The solution is well suited for both analysts and programmers working with XML on a regular basis.</p>
+                            <h1>SmartXML allows:</h1>
+                            <ul>
+                                <li>Classify documents</li>
+                                <li>Process documents with no fixed data schema</li>
+                                <li>Flexibly configure the required set of fields for extraction</li>
+                                <li>Generate SQL/JSON from XML and load them into the database, preserving hierarchical relationships</li>
+                                <li>Use built-in grammars (tiny NLP) for preprocessing data</li>
+                                <li>And much more.</li>
+                            </ul>
+                        </div>
+
+                        <img class="img_main" src="/smartxml/assets/images/main-animation.webp" style="flex: 0 1 60%; max-width: 60%; min-width: 300px; height: auto" />
+                    </div>
+
+                    <div class="video-container" x-data="{ activeDialog: null }">
+                        <div class="video-item">
+                            <h4>XML to JSON</h4>
+                            <video class="thumbnail" controls @click="activeDialog = 'xml2json'; $nextTick(() => $refs.xml2json.showModal())">
+                                <source src="/smartxml/assets/animation/xml2json.webm" type="video/webm" />
+                            </video>
+                        </div>
+
+                        <div class="video-item">
+                            <h4>XML to Table</h4>
+                            <video class="thumbnail" controls @click="activeDialog = 'xml2table'; $nextTick(() => $refs.xml2table.showModal())">
+                                <source src="/smartxml/assets/animation/xml2table.webm" type="video/webm" />
+                            </video>
+                        </div>
+
+                        <div class="video-item">
+                            <h4>XML to SQL</h4>
+                            <video class="thumbnail" controls @click="activeDialog = 'xml2sql'; $nextTick(() => $refs.xml2sql.showModal())">
+                                <source src="/smartxml/assets/animation/xml2sql.webm" type="video/webm" />
+                            </video>
+                        </div>
+
+                        <dialog id="xml2json" x-ref="xml2json" @click.outside="activeDialog = null">
+                            <form method="dialog">
+                                <span class="close" @click="activeDialog = null">&times;</span>
+                                <video controls class="modal-video">
+                                    <source src="/smartxml/assets/animation/xml2json.webm" type="video/webm" />
+                                </video>
+                            </form>
+                        </dialog>
+
+                        <dialog id="xml2table" x-ref="xml2table" @click.outside="activeDialog = null">
+                            <form method="dialog">
+                                <span class="close" @click="activeDialog = null">&times;</span>
+                                <video controls class="modal-video">
+                                    <source src="/smartxml/assets/animation/xml2table.webm" type="video/webm" />
+                                </video>
+                            </form>
+                        </dialog>
+
+                        <dialog id="xml2sql" x-ref="xml2sql" @click.outside="activeDialog = null">
+                            <form method="dialog">
+                                <span class="close" @click="activeDialog = null">&times;</span>
+                                <video controls class="modal-video">
+                                    <source src="/smartxml/assets/animation/xml2sql.webm" type="video/webm" />
+                                </video>
+                            </form>
+                        </dialog>
+                    </div>
+
+                    <button class="large-button button-blue" onclick="location.href='/smartxml';">Learn More</button>
+                </section>
+            </article>
+        </main>
+
+        <include src="//redata.dev/components/footer.html"></include>
+    </body>
+</html>

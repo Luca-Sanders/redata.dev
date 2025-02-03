@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<head>
+  <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+  <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <meta charset="utf-8">
+  <meta name="description" content="Configuring SmartXML for multiprocessing">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <script src="/js/pre-code-fix.js" defer></script>
+  <script src="//static.redata.dev/js/media-queries.js" defer></script>
+  <script src="//static.redata.dev/js/include.js" defer></script>    
+  <script src="//static.redata.dev/js/ui.js" defer></script>  
+  <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+ 
+  <title>Jobs Settings</title>
+</head>
+
+<body>
+
+    <main>
+
+      <header>
+        <include src="components/header.html"></include>
+        <div id="breadcrumb"></div>
+      </header>
+
+      <article>
+        <h2>Jobs Settings</h2>
+
+        <h3>Configuring Table Structure</h3>
+        <p>SmartXML operates in single-threaded mode. A <code>Job</code> represents a set of rules that define the selection of XML files for processing. Multiple <code>Job</code> instances are necessary if you need to run more than one instance of SmartXML and provide each with a separate portion of XML to process. Otherwise, one Job is sufficient.</p>
+        <p>The recommended name for the table containing the source files is <span class="table-name">xml_files</span>.</p>
+        <p>The <span class="table-name">xml_files</span> table can contain any number of columns describing the data. However, it must include the following columns:</p>
+        
+        <ol>
+          <li>
+            <code>id</code> - a unique identifier. Cannot be <code>NULL</code>.
+          </li>
+          <li>
+            <code>xml_path</code> - the full or relative path to the target XML file. If the path is relative, specify the missing part of the path from the root on the <span class="ui-item">Settings</span> ⮞ <span class="ui-item">General</span> ⮞ <span class="ui-item">XML folder</span> tab.
+            If the path is formed from the names of other columns, you can make the <code>xml_path</code> column auto-generated using a generated column. Example:
+            <div class="code" style="padding-top: 5px; height: 100%;"> 
+            <pre><code>
+              ALTER TABLE <span class="table-name">xml_files</span> ADD COLUMN xml_path VARCHAR(300) GENERATED ALWAYS AS (section_name || '/' || file_type || '/' || file_name) STORED;
+            </code></pre>
+            </div>
+          </li>
+          <li>
+            <code>parsing_status</code> with type <code>TEXT</code>/<code>VARCHAR</code>. Indicates the parsing status. Default is <code>NULL</code>.
+          </li>
+          <li>
+            <code>processed_date</code> with type <code>TEXT</code>/ <code>TIMESTAMP WITHOUT TIME ZONE</code> to store the processing time.
+          </li>
+          <li>
+            <code>filling_percent_stat</code> with type <code>Numeric</code>/<code>SmallInt</code> to store the document's filling statistics (corresponding setting must be enabled).
+          </li>
+        </ol>
+        
+        <p>
+          Example of the minimum required table structure for SQLite and PostgreSQL:
+        </p>
+        
+
+        <div class="same-height-and-width">
+            <div>
+            <pre><code>
+            CREATE TABLE <span class="table-name">xml_files</span> (
+                "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+                "xml_path" Text,
+                "parsing_status" Text,
+                "filling_percent_stat" Numeric,
+                "processed_date" Text,
+                CONSTRAINT "unique_id" UNIQUE ("id")
+            );
+              </code></pre>
+          </div>
+   
+            <div>
+            <pre><code>
+            CREATE TABLE <span class="table-name">xml_files</span> ( 
+                "id" BigInt primary key generated always as identity,
+                "xml_path" Character Varying(300),
+                "parsing_status" Character Varying(50),
+                "filling_percent_stat" SmallInt,
+                "processed_date" Timestamp Without Time Zone
+            );
+            </code></pre>
+          </div>
+
+
+        </div>
+
+        <p>By default, each <code>Job</code> requests 1000 files for processing. Depending on your needs, this value can be adjusted.</p>
+
+        <h3 style="margin: 0;">Configuring <code>Job</code> Parameters for Multiprocessor Processing</h3>
+        <p>
+          To configure individual <code>Job</code> settings, go to the <span class="ui-item">Database</span> tab, click the <span
+            class="ui-item">Add</span> button, and add the number of <code>Job</code> instances you plan to process simultaneously.
+          The number of <code>Job</code> instances should not exceed the number of available processor cores.
+        </p>
+        
+        <p>
+          For a table with the following structure:
+        </p>
+        
+
+        <div>
+        <pre><code>
+        CREATE TABLE <span class="table-name">xml_files</span> (
+          "id" Integer PRIMARY KEY AUTOINCREMENT,
+          "xml_path" Text,
+          "parsing_status" Text,
+          "filling_percent_stat" Numeric,
+          "job_number" Numeric,
+          "doc_date" Text,
+          "section_name" Text,
+          "action_type" Text,
+          "some_status" Text,
+          "some_date" Text,
+          "some_flag" Text,
+        CONSTRAINT "unique_id" UNIQUE ( "id" ) 
+        );
+        </code></pre>
+        </div>
+
+ 
+        <p>Использование следующих настроек <code>Job</code>:</p>
+        <div class="img-container">
+          <img src="images/jobs-sample.png" />
+        </div>
+
+        <p>Приведет к генерации следующего запроса на получение задач для обработки</p>
+          <div>
+          <pre><code>
+          SELECT "id", "xml_path" 
+              FROM <span class="table-name">xml_files</span> WHERE 
+              parsing_status IS NULL
+              AND "job_number" IN (1,2,3,4)
+              AND "doc_date" >= DATE('2024-01-01')
+              AND "doc_date" <= DATE('2030-01-01')
+              AND "section_name" IN ('sectionA', 'sectionB', 'sectionC')
+              AND "action_type" IS NOT NULL
+              AND "some_status" IS NULL
+              AND "some_date" = DATE('2024-04-15')
+              AND "some_flag" IS TRUE
+            ORDER BY "id" ASC
+            LIMIT 1000;
+                  </code></pre>
+        </div>
+   
+
+        <p>Example of creating two Jobs:</p>
+        <div class="img-container">
+          <img src="images/jobs-sample2.png" />
+        </div>
+        
+        <p>
+          The query to select files for processing that will be generated by the second Job:
+        </p>
+        
+
+        <div>
+          <pre><code>
+          SELECT "id", "xml_path" 
+              FROM <span class="table-name">xml_files</span> WHERE 
+                parsing_status IS NULL  
+                AND "jobNumber" IN (5, 6, 7, 8) 
+                AND "section_name" = 'sectionD' 
+                ORDER BY "id" ASC 
+              LIMIT 1000;
+         </code></pre>
+   
+        </div>
+
+        <details>
+          <summary>
+            Общий вид сгенерированного <code>job.txt</code>
+          </summary>
+
+          <pre><code>
+          job-number: 1
+          xml-table-name: "xml_files" 
+          limit: 1000 
+          order_by: "id ASC" 
+          select-fields: [
+              id xml_path
+          ] 
+          where-condition: [
+              [
+                  job_number: [1 2 3 4] 
+                  doc_date: ["2024-01-01" "2030-01-01"] 
+                  section_name: [sectionA sectionB sectionC] 
+                  action_type: "NOT NULL" 
+                  some_status: "NULL" 
+                  some_date: ["2024-04-15"] 
+                  some_flag: True
+              ] 
+              [
+                  job_number: [5 6 7 8]
+                  section_name: "sectionD"
+              ]
+          ]
+          </code><pre>
+      </details>
+
+      <p>Supported formats: <code>integer, string, Date, NULL, NOT NULL, TRUE, FALSE</code></p>
+
+      <p>Note:</p>
+      <ul>
+        <li>SQLite does not support the <code>BOOLEAN</code> type.</li>
+        <li><code>Date</code> should have the format <code>yyyy-mm-dd</code></li>
+        <li>Columns <code>id</code>, <code>parsing_status</code>, <code>xml_path</code> are not explicitly mentioned in the <code>Job</code>, but as seen in the example, they are included in the query as mandatory.</li>
+      </ul>
+      
+      <p>To save the <code>Job</code>, be sure to click <span class="ui-item">Save Job</span> and <span class="ui-item">Save</span> in the <span class="ui-item">Job Settings</span> menu.</p>
+      
+      <div class="img-container">
+        <img src="images/save_job_and_settings.png" />
+      </div>
+      
+      
+    </article>
+    <hr>
+
+  </main>
+  <include src="/components/footer.html"></include>
+</body>
+
+</html>

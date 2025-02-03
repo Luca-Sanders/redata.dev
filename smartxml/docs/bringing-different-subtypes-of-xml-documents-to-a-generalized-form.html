@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+    <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <meta charset="utf-8">
+    <meta name="description" content="An example of how to bring different XML variants to a generalized representation">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script src="/js/pre-code-fix.js" defer></script>
+    <script src="//static.redata.dev/js/media-queries.js" defer></script>
+    <script src="//static.redata.dev/js/include.js" defer></script>
+    <script src="//static.redata.dev/js/ui.js" defer></script>
+    <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    
+    <title>Bringing Various Subtypes of XML Documents to a Generic Form</title>
+</head>
+
+<body>    
+    <main>
+
+        <header>
+            <include src="components/header.html"></include>
+            <div id="breadcrumb"></div>
+        </header>
+
+        <article>
+            <h2 style="margin: 0;">Bringing Various Subtypes of XML Documents to a Generic Form</h2>
+            <p>
+                In the test project <span class="code-inline-snippet">credit-forms-unification-sample</span>, an example is provided on how to parse
+                structurally different but content-wise similar XML documents.
+            </p>
+            <p>Let's assume that we have loan applications from three different banks.</p>
+            
+
+        <div class="same-height-and-width">
+
+            <div>
+                <h5>DeutscheBank:</h5>
+                <pre><code>
+                    <span class="tag-name">&lt;?xml version="1.0" encoding="UTF-8"?</span><span class="tag-name">&gt;</span>
+                    <span class="tag-name">&lt;LoanApplication&gt;</span>
+                    <span class="tag-name">  &lt;ApplicantInfo&gt;</span>
+                    <span class="tag-name">    &lt;FullName&gt;</span>
+                    <span class="tag-name">      &lt;FirstName&gt;</span><span class="tag-value">Sofia</span><span class="tag-name">&lt;/FirstName&gt;</span>
+                    <span class="tag-name">      &lt;LastName&gt;</span><span class="tag-value">Lorenzo</span><span class="tag-name">&lt;/LastName&gt;</span>
+                    <span class="tag-name">    &lt;/FullName&gt;</span>
+                    <span class="tag-name">    &lt;DateOfBirth&gt;</span><span class="tag-value">1992-03-24</span><span class="tag-name">&lt;/DateOfBirth&gt;</span>
+                    <span class="tag-name">    &lt;TaxIdentificationNumber&gt;</span><span class="tag-value">545-56-7190</span><span class="tag-name">&lt;/TaxIdentificationNumber&gt;</span>
+                    <span class="tag-name">    &lt;ContactInfo&gt;</span>
+                    <span class="tag-name">      &lt;EmailAddress&gt;</span><span class="tag-value">sofia.l@example.com</span><span class="tag-name">&lt;/EmailAddress&gt;</span>
+                    <span class="tag-name">      &lt;PhoneNumber&gt;</span><span class="tag-value">+39 02 98765432</span><span class="tag-name">&lt;/PhoneNumber&gt;</span>
+                    <span class="tag-name">      &lt;MailingAddress&gt;</span>
+                    <span class="tag-name">        &lt;Street&gt;</span><span class="tag-value">28 Via Roma</span><span class="tag-name">&lt;/Street&gt;</span>
+                    <span class="tag-name">        &lt;City&gt;</span><span class="tag-value">Milan</span><span class="tag-name">&lt;/City&gt;</span>
+                    <span class="tag-name">        &lt;ZipCode&gt;</span><span class="tag-value">20121</span><span class="tag-name">&lt;/ZipCode&gt;</span>
+                    <span class="tag-name">        &lt;Country&gt;</span><span class="tag-value">Italy</span><span class="tag-name">&lt;/Country&gt;</span>
+                    <span class="tag-name">      &lt;/MailingAddress&gt;</span>
+                    <span class="tag-name">    &lt;/ContactInfo&gt;</span>
+                    <span class="tag-name">    &lt;MaritalStatus&gt;</span><span class="tag-value">Single</span><span class="tag-name">&lt;/MaritalStatus&gt;</span>
+                    <span class="tag-name">    &lt;Dependents&gt;</span><span class="tag-value">0</span><span class="tag-name">&lt;/Dependents&gt;</span>
+                    <span class="tag-name">    &lt;Nationality&gt;</span><span class="tag-value">Italy</span><span class="tag-name">&lt;/Nationality&gt;</span>
+                    <span class="tag-name">  &lt;/ApplicantInfo&gt;</span>
+                    <span class="tag-name">  &lt;EmploymentInfo&gt;</span>
+                    <span class="tag-name">    &lt;EmploymentStatus&gt;</span><span class="tag-value">Employed</span><span class="tag-name">&lt;/EmploymentStatus&gt;</span>
+                    <span class="tag-name">    &lt;Employer&gt;</span>
+                    <span class="tag-name">      &lt;Name&gt;</span><span class="tag-value">Milan General Hospital</span><span class="tag-name">&lt;/Name&gt;</span>
+                    <span class="tag-name">      &lt;Location&gt;</span>
+                    <span class="tag-name">        &lt;Street&gt;</span><span class="tag-value">10 Corso Vittorio Emanuele II</span><span class="tag-name">&lt;/Street&gt;</span>
+                    <span class="tag-name">        &lt;City&gt;</span><span class="tag-value">Milan</span><span class="tag-name">&lt;/City&gt;</span>
+                    <span class="tag-name">        &lt;ZipCode&gt;</span><span class="tag-value">20122</span><span class="tag-name">&lt;/ZipCode&gt;</span>
+                    <span class="tag-name">        &lt;Country&gt;</span><span class="tag-value">Italy</span><span class="tag-name">&lt;/Country&gt;</span>
+                    <span class="tag-name">      &lt;/Location&gt;</span>
+                    <span class="tag-name">    &lt;/Employer&gt;</span>
+                    <span class="tag-name">    &lt;JobDetails&gt;</span>
+                    <span class="tag-name">      &lt;JobTitle&gt;</span><span class="tag-value">Registered Nurse</span><span class="tag-name">&lt;/JobTitle&gt;</span>
+                    <span class="tag-name">      &lt;JobDuration&gt;</span><span class="tag-value">7 years</span><span class="tag-name">&lt;/JobDuration&gt;</span>
+                    <span class="tag-name">    &lt;/JobDetails&gt;</span>
+                    <span class="tag-name">  &lt;/EmploymentInfo&gt;</span>
+                    <span class="tag-name">  &lt;FinancialInfo&gt;</span>
+                    <span class="tag-name">    &lt;Salary&gt;</span><span class="tag-value">50000.75</span><span class="tag-name">&lt;/Salary&gt;</span>
+                    <span class="tag-name">    &lt;CreditRating&gt;</span><span class="tag-value">710</span><span class="tag-name">&lt;/CreditRating&gt;</span>
+                    <span class="tag-name">    &lt;MonthlyExpenses&gt;</span><span class="tag-value">2700.50</span><span class="tag-name">&lt;/MonthlyExpenses&gt;</span>
+                    <span class="tag-name">    &lt;LoanAmount&gt;</span><span class="tag-value">42000.00</span><span class="tag-name">&lt;/LoanAmount&gt;</span>
+                    <span class="tag-name">    &lt;LoanPurpose&gt;</span><span class="tag-value">Further Education</span><span class="tag-name">&lt;/LoanPurpose&gt;</span>
+                    <span class="tag-name">    &lt;ApplicationDate&gt;</span><span class="tag-value">2024-03-25</span><span class="tag-name">&lt;/ApplicationDate&gt;</span>
+                    <span class="tag-name">    &lt;LoanOfficerName&gt;</span><span class="tag-value">Luca Rossi</span><span class="tag-name">&lt;/LoanOfficerName&gt;</span>
+                    <span class="tag-name">&lt;/FinancialInfo&gt;</span>
+                </code>
+                </pre>
+            </div>
+
+            <div>
+                <h5>Barclays:</h5>
+                <pre>
+                <code>
+                    <span class="tag-name">&lt;?xml version="1.0" encoding="UTF-8"?</span><span class="tag-name">&gt;</span>
+                    <span class="tag-name">&lt;LoanApplication&gt;</span>
+                    <span class="tag-name">  &lt;docDate&gt;</span><span class="tag-value">2024-03-25</span><span class="tag-name">&lt;/docDate&gt;</span>
+                    <span class="tag-name">  &lt;Applicant&gt;</span>
+                    <span class="tag-name">    &lt;Name&gt;</span>
+                    <span class="tag-name">      &lt;First&gt;</span><span class="tag-value">Lisa</span><span class="tag-name">&lt;/First&gt;</span>
+                    <span class="tag-name">      &lt;Last&gt;</span><span class="tag-value">Martin</span><span class="tag-name">&lt;/Last&gt;</span>
+                    <span class="tag-name">    &lt;/Name&gt;</span>
+                    <span class="tag-name">    &lt;DateOfBirth&gt;</span><span class="tag-value">1987-12-12</span><span class="tag-name">&lt;/DateOfBirth&gt;</span>
+                    <span class="tag-name">    &lt;TaxID&gt;</span><span class="tag-value">456-78-9012</span><span class="tag-name">&lt;/TaxID&gt;</span>
+                    <span class="tag-name">    &lt;Location&gt;</span>
+                    <span class="tag-name">      &lt;Street&gt;</span><span class="tag-value">12 Binnenhof</span><span class="tag-name">&lt;/Street&gt;</span>
+                    <span class="tag-name">      &lt;City&gt;</span><span class="tag-value">Amsterdam</span><span class="tag-name">&lt;/City&gt;</span>
+                    <span class="tag-name">      &lt;ZipCode&gt;</span><span class="tag-value">1011 AB</span><span class="tag-name">&lt;/ZipCode&gt;</span>
+                    <span class="tag-name">      &lt;Country&gt;</span><span class="tag-value">Netherlands</span><span class="tag-name">&lt;/Country&gt;</span>
+                    <span class="tag-name">    &lt;/Location&gt;</span>
+                    <span class="tag-name">    &lt;ContactInfo&gt;</span>
+                    <span class="tag-name">      &lt;Email&gt;</span><span class="tag-value">lisa.m@example.com</span><span class="tag-name">&lt;/Email&gt;</span>
+                    <span class="tag-name">      &lt;Phone&gt;</span><span class="tag-value">+31 20 9876543</span><span class="tag-name">&lt;/Phone&gt;</span>
+                    <span class="tag-name">    &lt;/ContactInfo&gt;</span>
+                    <span class="tag-name">    &lt;MaritalStatus&gt;</span><span class="tag-value">Single</span><span class="tag-name">&lt;/MaritalStatus&gt;</span>
+                    <span class="tag-name">    &lt;Dependents&gt;</span><span class="tag-value">0</span><span class="tag-name">&lt;/Dependents&gt;</span>
+                    <span class="tag-name">    &lt;Nationality&gt;</span><span class="tag-value">Netherlands</span><span class="tag-name">&lt;/Nationality&gt;</span>
+                    <span class="tag-name">    &lt;PreviousLocation&gt;</span>
+                    <span class="tag-name">      &lt;Street&gt;</span><span class="tag-value">28 Piazza San Marco</span><span class="tag-name">&lt;/Street&gt;</span>
+                    <span class="tag-name">      &lt;City&gt;</span><span class="tag-value">Venice</span><span class="tag-name">&lt;/City&gt;</span>
+                    <span class="tag-name">      &lt;ZipCode&gt;</span><span class="tag-value">30124</span><span class="tag-name">&lt;/ZipCode&gt;</span>
+                    <span class="tag-name">      &lt;Country&gt;</span><span class="tag-value">Italy</span><span class="tag-name">&lt;/Country&gt;</span>
+                    <span class="tag-name">    &lt;/PreviousLocation&gt;</span>
+                    <span class="tag-name">    &lt;ResidenceStatus&gt;</span><span class="tag-value">Own</span><span class="tag-name">&lt;/ResidenceStatus&gt;</span>
+                    <span class="tag-name">    &lt;ResidenceDuration&gt;</span><span class="tag-value">6</span><span class="tag-name">&lt;/ResidenceDuration&gt;</span>
+                    <span class="tag-name">  &lt;/Applicant&gt;</span>
+                    <span class="tag-name">  &lt;Employment&gt;</span>
+                    <span class="tag-name">    &lt;Employer&gt;</span><span class="tag-value">EuroTech Solutions</span><span class="tag-name">&lt;/Employer&gt;</span>
+                    <span class="tag-name">    &lt;JobTitle&gt;</span><span class="tag-value">Marketing Specialist</span><span class="tag-name">&lt;/JobTitle&gt;</span>
+                    <span class="tag-name">    &lt;JobDuration&gt;</span><span class="tag-value">5 years</span><span class="tag-name">&lt;/JobDuration&gt;</span>
+                    <span class="tag-name">    &lt;WorkLocation&gt;</span>
+                    <span class="tag-name">      &lt;Street&gt;</span><span class="tag-value">7 Leopoldstraße</span><span class="tag-name">&lt;/Street&gt;</span>
+                    <span class="tag-name">      &lt;City&gt;</span><span class="tag-value">Munich</span><span class="tag-name">&lt;/City&gt;</span>
+                    <span class="tag-name">      &lt;ZipCode&gt;</span><span class="tag-value">80331</span><span class="tag-name">&lt;/ZipCode&gt;</span>
+                    <span class="tag-name">      &lt;Country&gt;</span><span class="tag-value">Germany</span><span class="tag-name">&lt;/Country&gt;</span>
+                    <span class="tag-name">    &lt;/WorkLocation&gt;</span>
+                    <span class="tag-name">  &lt;/Employment&gt;</span>
+                    <span class="tag-name">  &lt;FinancialInfo&gt;</span>
+                    <span class="tag-name">    &lt;Salary&gt;</span><span class="tag-value">71000</span><span class="tag-name">&lt;/Salary&gt;</span>
+                    <span class="tag-name">    &lt;CreditRating&gt;</span><span class="tag-value">750</span><span class="tag-name">&lt;/CreditRating&gt;</span>
+                    <span class="tag-name">    &lt;MonthlyExpenses&gt;</span><span class="tag-value">2600.50</span><span class="tag-name">&lt;/MonthlyExpenses&gt;</span>
+                    <span class="tag-name">    &lt;LoanAmount&gt;</span><span class="tag-value">48000.00</span><span class="tag-name">&lt;/LoanAmount&gt;</span>
+                    <span class="tag-name">    &lt;LoanPurpose&gt;</span><span class="tag-value">Education Expenses</span><span class="tag-name">&lt;/LoanPurpose&gt;</span>
+                    <span class="tag-name">  &lt;/FinancialInfo&gt;</span>
+                </code>
+                </pre>
+            </div>
+
+
+            <div>
+                <h5>RaboBank:</h5>
+                <pre>
+                <code>
+                    <span class="tag-name">&lt;?xml version="1.0" encoding="UTF-8"?</span><span class="tag-name">&gt;</span>
+                    <span class="tag-name">&lt;LoanApplication&gt;</span>
+                    <span class="tag-name">  &lt;documentDate&gt;</span><span class="tag-value">2024-03-24</span><span class="tag-name">&lt;/documentDate&gt;</span>
+                    <span class="tag-name">  &lt;Applicant&gt;</span>
+                    <span class="tag-name">    &lt;FullName&gt;</span>
+                    <span class="tag-name">      &lt;FirstName&gt;</span><span class="tag-value">John</span><span class="tag-name">&lt;/FirstName&gt;</span>
+                    <span class="tag-name">      &lt;LastName&gt;</span><span class="tag-value">Smith</span><span class="tag-name">&lt;/LastName&gt;</span>
+                    <span class="tag-name">    &lt;/FullName&gt;</span>
+                    <span class="tag-name">    &lt;DateOfBirth&gt;</span><span class="tag-value">1980-03-25</span><span class="tag-name">&lt;/DateOfBirth&gt;</span>
+                    <span class="tag-name">    &lt;SocialSecurityNumber&gt;</span><span class="tag-value">987-65-4321</span><span class="tag-name">&lt;/SocialSecurityNumber&gt;</span>
+                    <span class="tag-name">    &lt;Address&gt;</span>
+                    <span class="tag-name">      &lt;Street&gt;</span><span class="tag-value">12 Park Lane</span><span class="tag-name">&lt;/Street&gt;</span>
+                    <span class="tag-name">      &lt;City&gt;</span><span class="tag-value">London</span><span class="tag-name">&lt;/City&gt;</span>
+                    <span class="tag-name">      &lt;PostalCode&gt;</span><span class="tag-value">W1A 1AA</span><span class="tag-name">&lt;/PostalCode&gt;</span>
+                    <span class="tag-name">      &lt;Country&gt;</span><span class="tag-value">United Kingdom</span><span class="tag-name">&lt;/Country&gt;</span>
+                    <span class="tag-name">    &lt;/Address&gt;</span>
+                    <span class="tag-name">    &lt;ContactInformation&gt;</span>
+                    <span class="tag-name">      &lt;Email&gt;</span><span class="tag-value">john.smith@example.com</span><span class="tag-name">&lt;/Email&gt;</span>
+                    <span class="tag-name">      &lt;Phone&gt;</span><span class="tag-value">+44 20 12345678</span><span class="tag-name">&lt;/Phone&gt;</span>
+                    <span class="tag-name">    &lt;/ContactInformation&gt;</span>
+                    <span class="tag-name">    &lt;MaritalStatus&gt;</span><span class="tag-value">TRUE</span><span class="tag-name">&lt;/MaritalStatus&gt;</span>
+                    <span class="tag-name">    &lt;Dependents&gt;</span><span class="tag-value">2</span><span class="tag-name">&lt;/Dependents&gt;</span>
+                    <span class="tag-name">    &lt;Citizenship&gt;</span><span class="tag-value">United Kingdom</span><span class="tag-name">&lt;/Citizenship&gt;</span>
+                    <span class="tag-name">    &lt;PreviousAddress&gt;</span>
+                    <span class="tag-name">      &lt;Street&gt;</span><span class="tag-value">34 Via Roma</span><span class="tag-name">&lt;/Street&gt;</span>
+                    <span class="tag-name">      &lt;City&gt;</span><span class="tag-value">Rome</span><span class="tag-name">&lt;/City&gt;</span>
+                    <span class="tag-name">      &lt;PostalCode&gt;</span><span class="tag-value">00100</span><span class="tag-name">&lt;/PostalCode&gt;</span>
+                    <span class="tag-name">      &lt;Country&gt;</span><span class="tag-value">Italy</span><span class="tag-name">&lt;/Country&gt;</span>
+                    <span class="tag-name">    &lt;/PreviousAddress&gt;</span>
+                    <span class="tag-name">    &lt;ResidentialStatus&gt;</span><span class="tag-value">Rent</span><span class="tag-name">&lt;/ResidentialStatus&gt;</span>
+                    <span class="tag-name">    &lt;YearsAtCurrentAddress&gt;</span><span class="tag-value">3</span><span class="tag-name">&lt;/YearsAtCurrentAddress&gt;</span>
+                    <span class="tag-name">  &lt;/Applicant&gt;</span>
+                    <span class="tag-name">  &lt;EmploymentInformation&gt;</span>
+                    <span class="tag-name">    &lt;Employer&gt;</span><span class="tag-value">Medical Clinic</span><span class="tag-name">&lt;/Employer&gt;</span>
+                    <span class="tag-name">    &lt;Occupation&gt;</span><span class="tag-value">Physician assistant</span><span class="tag-name">&lt;/Occupation&gt;</span>
+                    <span class="tag-name">    &lt;EmploymentDuration&gt;</span><span class="tag-value">5 years</span><span class="tag-name">&lt;/EmploymentDuration&gt;</span>
+                    <span class="tag-name">    &lt;WorkLocation&gt;</span>
+                    <span class="tag-name">      &lt;Street&gt;</span><span class="tag-value">7 Friedrichstraße</span><span class="tag-name">&lt;/Street&gt;</span>
+                    <span class="tag-name">      &lt;City&gt;</span><span class="tag-value">Berlin</span><span class="tag-name">&lt;/City&gt;</span>
+                    <span class="tag-name">      &lt;PostalCode&gt;</span><span class="tag-value">10117</span><span class="tag-name">&lt;/PostalCode&gt;</span>
+                    <span class="tag-name">      &lt;Country&gt;</span><span class="tag-value">Germany</span><span class="tag-name">&lt;/Country&gt;</span>
+                    <span class="tag-name">    &lt;/WorkLocation&gt;</span>
+                    <span class="tag-name">  &lt;/EmploymentInformation&gt;</span>
+                    <span class="tag-name">  &lt;FinancialInformation&gt;</span>
+                    <span class="tag-name">    &lt;Income&gt;</span><span class="tag-value">75000.50</span><span class="tag-name">&lt;/Income&gt;</span>
+                    <span class="tag-name">    &lt;CreditScore&gt;</span><span class="tag-value">800</span><span class="tag-name">&lt;/CreditScore&gt;</span>
+                    <span class="tag-name">    &lt;MonthlyExpenses&gt;</span><span class="tag-value">3000.75</span><span class="tag-name">&lt;/MonthlyExpenses&gt;</span>
+                    <span class="tag-name">    &lt;RequestedLoanAmount&gt;</span><span class="tag-value">50000.00</span><span class="tag-name">&lt;/RequestedLoanAmount&gt;</span>
+                    <span class="tag-name">    &lt;PurposeOfLoan&gt;</span><span class="tag-value">Home Purchase</span><span class="tag-name">&lt;/PurposeOfLoan&gt;</span>
+                    <span class="tag-name">  &lt;/FinancialInformation&gt;</span>
+                </code>
+                </pre>
+            </div>
+
+            </div>
+
+            <p>As seen from the examples, the naming and nesting of tags vary significantly.</p>
+
+            <p>Let's create a project <code>credit-forms-unification-sample</code> and open it. After that, a series of buttons will be activated
+                for adding sections and subsections.
+            </p>
+            
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/create-project.png">
+            </div>
+
+
+            <p>Let's create a section in the project. The section name is needed for logical data grouping. For each individual section,
+                you can define specific document parsing rules. In the case of exporting to NoSQL, the section name is used
+                as the collection name.
+                In this project, we want to standardize several different documents. Therefore, we will have
+                one section and one subsection.
+            </p>
+            
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/add-section-to-project.png">
+            </div>
+
+            <p>Let's add a subsection. In the case of tabular data representation, the subsection name should match the name
+                of the table where the zero-level nested data will be placed.
+            </p>
+            
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/add-subsection-to-project.png">
+            </div>
+
+
+            <p>Switch to the subsection and describe the data structure in the intermediate representation. More details on how
+                to describe the intermediate representation are covered in other sections of the documentation. Save the changes.
+            </p>
+            
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/describe-data-structure-for-subsection.png">
+            </div>
+
+
+            <p>Open the first XML document from the folder <span class="code-inline-snippet">data-samples/credit-forms-unification-sample</span> and click
+                the <span class="ui-item">Morphology</span> button. After that, in the bottom menu, we will see a list of tags for
+                which mappings need to be set.
+            </p>
+            
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/open-first-xml-and-run-morphology-analize.png">
+            </div>
+
+            <p>Establish mappings between each element from the list of tags and the intermediate representation by clicking <span
+                class="ui-item">Add to Rules</span>. If a tag chain is not needed, send it to the ignored list by using the <span
+                class="ui-item">Add to Ignore</span> button.
+        </p>
+        
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/match-the-tags-2.png">
+            </div>
+
+
+            <p>Repeat the above action for all tag chains:
+            </p>
+            
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/match-the-tags-3.png">
+            </div>
+
+
+
+            <p>Now, after clicking the <span class="ui-item">Morphology</span> button, we will see our intermediate
+                representation filled with data.
+            </p>
+            
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/run-morphology-after-tags-matching.png">
+            </div>
+
+            <p>Open a new XML file, click <span class="ui-item">Morphology</span>. As seen, due to the different XML structure,
+                mapping occurred only for a small portion of the data.
+            </p>
+            
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/open-another-xml-and-click-to-morphology.png">
+            </div>
+
+            <p>Perform mapping for all remaining tags.</p>
+            
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/match-the-tags-for-second-file-1.png">
+            </div>
+
+            <p>Open the third file and repeat all actions for it.
+            </p>
+            
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/match-the-tags-for-third-file.png">
+            </div>
+
+            <p>After that, its structure will look like the following:
+            </p>
+            
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/third-all-tags-matched.png">
+            </div>
+
+
+            <p>
+                However, now if we try to perform parsing by clicking <span class="ui-item">Parse</span>, we will get
+                an incorrect result where part of the data is missing:
+            </p>
+            
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/missing-aliases.png">
+            </div>
+
+            <p>As seen from the example, the data for the <code>applicant_finance</code> section is missing.
+                In the XML itself, this section has two different spellings.
+            </p>
+            
+
+
+            <div class="same-height-and-width">
+
+                <div>
+                    <h5>DeutscheBank:</h5>
+                <pre>
+                <code>
+                    <span class="tag-name tag-name-active">&lt;FinancialInfo&gt;</span>
+                    <span class="tag-name">    &lt;Salary&gt;</span><span class="tag-value">50000.75</span><span class="tag-name">&lt;/Salary&gt;</span>
+                    <span class="tag-name">    &lt;CreditRating&gt;</span><span class="tag-value">710</span><span class="tag-name">&lt;/CreditRating&gt;</span>
+                    <span class="tag-name">    &lt;MonthlyExpenses&gt;</span><span class="tag-value">2700.50</span><span class="tag-name">&lt;/MonthlyExpenses&gt;</span>
+                    <span class="tag-name">    &lt;LoanAmount&gt;</span><span class="tag-value">42000.00</span><span class="tag-name">&lt;/LoanAmount&gt;</span>
+                    <span class="tag-name">    &lt;LoanPurpose&gt;</span><span class="tag-value">Further Education</span><span class="tag-name">&lt;/LoanPurpose&gt;</span>
+                    <span class="tag-name">    &lt;ApplicationDate&gt;</span><span class="tag-value">2024-03-25</span><span class="tag-name">&lt;/ApplicationDate&gt;</span>
+                    <span class="tag-name">    &lt;LoanOfficerName&gt;</span><span class="tag-value">Luca Rossi</span><span class="tag-name">&lt;/LoanOfficerName&gt;</span>
+                    <span class="tag-name tag-name-active">&lt;/FinancialInfo&gt;</span>
+                </code>
+                </pre>
+        
+            </div>
+
+
+            <div>
+                <h5>Barclays:</h5>
+                <pre>
+                <code>
+                    <span class="tag-name tag-name-active">&lt;FinancialInfo&gt;</span>
+                    <span class="tag-name">    &lt;Salary&gt;</span><span class="tag-value">71000</span><span class="tag-name">&lt;/Salary&gt;</span>
+                    <span class="tag-name">    &lt;CreditRating&gt;</span><span class="tag-value">750</span><span class="tag-name">&lt;/CreditRating&gt;</span>
+                    <span class="tag-name">    &lt;MonthlyExpenses&gt;</span><span class="tag-value">2600.50</span><span class="tag-name">&lt;/MonthlyExpenses&gt;</span>
+                    <span class="tag-name">    &lt;LoanAmount&gt;</span><span class="tag-value">48000.00</span><span class="tag-name">&lt;/LoanAmount&gt;</span>
+                    <span class="tag-name">    &lt;LoanPurpose&gt;</span><span class="tag-value">Education Expenses</span><span class="tag-name">&lt;/LoanPurpose&gt;</span>
+                    <span class="tag-name tag-name-active">&lt;/FinancialInfo&gt;</span>
+                </code>
+                </pre>
+
+            </div>
+
+
+            <div>
+                <h5>RaboBank:</h5>
+                <pre>
+                <code>
+                    <span class="tag-name tag-name-active">&lt;FinancialInformation&gt;</span>
+                    <span class="tag-name">    &lt;Income&gt;</span><span class="tag-value">75000.50</span><span class="tag-name">&lt;/Income&gt;</span>
+                    <span class="tag-name">    &lt;CreditScore&gt;</span><span class="tag-value">800</span><span class="tag-name">&lt;/CreditScore&gt;</span>
+                    <span class="tag-name">    &lt;MonthlyExpenses&gt;</span><span class="tag-value">3000.75</span><span class="tag-name">&lt;/MonthlyExpenses&gt;</span>
+                    <span class="tag-name">    &lt;RequestedLoanAmount&gt;</span><span class="tag-value">50000.00</span><span class="tag-name">&lt;/RequestedLoanAmount&gt;</span>
+                    <span class="tag-name">    &lt;PurposeOfLoan&gt;</span><span class="tag-value">Home Purchase</span><span class="tag-name">&lt;/PurposeOfLoan&gt;</span>
+                    <span class="tag-name tag-name-active">&lt;/FinancialInformation&gt;</span>
+                </code>
+                </pre>
+
+            </div>
+      </div>
+
+
+            
+
+            <p>
+                Switch to <span class="ui-item">Grow Rules</span> and specify the possible spellings of its name in actual
+                files:
+            </p>
+            
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/section-aliases-rules.png">
+            </div>
+
+            <p>
+                Now, after clicking the <span class="ui-item">Parse</span> button, the intermediate representation will look like this:
+            </p>
+            
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/parse-result.png">
+            </div>
+
+            <p>JSON representation:</p>
+
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/json-representation.png">
+            </div>
+            <p>
+                SQL representation:
+            </p>
+            <div class="img-container">
+                <img src="images/credit-forms-unification-sample/sql-representation.png">
+            </div>
+
+            <p>
+                Please note that the provided data is not suitable for database export yet, as there is no type conversion,
+                and all tag values are represented as strings.
+            </p>
+            
+
+            <p>Learn more about how to extract an arbitrary set of fields from XML and use it to update an existing database in <a href="./creating-database-table-patches-based-on-xml.html">this guide</a>.</p>
+
+
+        </article>
+
+
+    </main>
+
+    <include src="/components/footer.html"></include>
+</body>
+
+</html>

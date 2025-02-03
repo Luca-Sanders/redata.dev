@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+    <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <meta charset="utf-8">
+    <meta name="description" content="SmartXML documentation. Explain how to parsing XML documents of any complexity without writing code">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script src="/js/pre-code-fix.js" defer></script>
+    <script src="//static.redata.dev/js/media-queries.js" defer></script>
+    <script src="//static.redata.dev/js/include.js" defer></script>
+    <script src="//static.redata.dev/js/ui.js" defer></script>
+    <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+ 
+    <title>Docs</title>
+</head>
+
+<body>
+        <main>
+
+            <header>
+                <include src="components/header.html"></include>
+                <div id="breadcrumb"></div>
+            </header>
+
+            <article>    
+               
+                <div class="table-of-contents">
+                    <h4>Examples of projects:</h4>
+                    <ul>
+                        <li><a href="./how-to-parse-xml-into-sql-or-json.html">How to convert XML to SQL and JSON</a></li>
+                        <li><a href="./how-to-load-multiple-xml-into-database.html">How to load a set of XML into a database</a></li>
+                        <li><a href="./bringing-different-subtypes-of-xml-documents-to-a-generalized-form.html">Bringing different subtypes of xml documents to a generalized form</a></li>
+                        <li><a href="./creating-database-table-patches-based-on-xml.html">Creating patches based on XML documents</a></li>
+                        <li><a href="./type-conversion-in-xml-documents.html">Type conversion in xml documents</a></li>
+                        <li><a href="./project-structure.html">Project Structure</a></li>
+                        <li><a href="./intermediate-data-representation.html">Intermediate Data Representation</a></li>
+                    </ul>
+                </div>
+
+                <div class="table-of-contents">
+                    <h4>Settings Description:</h4>
+                    <ul>
+                        <li><a href="./database-connection-configuration.html">Database connection configuration</a></li>
+                        <li><a href="./jobs-settings.html">Jobs Settings</a></li>
+                        <li><a href="./cmd-args-and-batch-processing.html">Command line arguments and batch processing</a></li>
+                    </ul>
+                </div>                
+
+                <div class="faq">
+                    <h4>FAQ:</h4>
+                    <details>
+                        <summary>Where can I get an ODBC Driver?</summary>
+                        <p>The current version requires an ODBC driver to connect to the database. A 32-bit version of the
+                            ODBC driver.</p>
+                        <p>For SQLite, the driver can be downloaded <a
+                                href="http://www.ch-werner.de/sqliteodbc/sqliteodbc.exe">here</a>.</p>
+                        <p>For PostgreSQL, it is recommended to install the ODBC driver via the ODBC driver included with the package PostgreSQL
+                            Application Stack Builder.</p>
+                    </details>
+                    <details>
+                        <summary>Why ORM is bad?</summary>
+                        <p>ORM does not allow you to precisely control data extraction and process complex documents that do not have a clear schema.</p>
+                        <p>Also, most ORMs do not allow you to preserve spatial parent-descendant relationships between
+                            nodes.</p>
+                    </details>
+                    <details>
+                        <summary>Are XSD schematics necessary?</summary>
+                        <p>Practice shows that XSD schemas create more problems than they solve. Not all XML files
+                            have XSD schemas. Not all schemas are correct.</p>
+                    </details>
+                    <details>
+                        <summary>When will the 64 bit version be released?</summary>
+                        <p>Approximately in the 4th quarter of 2025.</p>
+                    </details>
+                    <details>
+                        <summary>What are grammars and how to write NLP rules?</summary>
+                        <p>SmartXML uses the Parse engine built into the Red language (engine is extremely lightweight, so it can't be compared to full-blown NLP engines), which allows you to perform a number of complex plain text manipulations, that cannot be done with the same regular expressions.</p>
+                        <p>You can write the rules yourself by studying the documentation <a
+                                href="https://github.com/red/docs/blob/master/en/parse.adoc">Parse</a> or order
+                                to write the rules with us.</p>
+                    </details>
+                </div>
+            </article>
+        </main>
+
+        <include src="/components/footer.html"></include>
+
+
+</body>
+
+</html>

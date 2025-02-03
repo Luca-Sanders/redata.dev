@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" rel="preload" href="//static.redata.dev/css/global.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+    <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <meta charset="utf-8">
+    <meta name="description" content="SmartXML allows you to parsing XML documents of any complexity. It does not require programming skills. Allows flexible uploading of data to the database.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer="" src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script src="/js/pre-code-fix.js" defer=""></script>
+    <script src="//static.redata.dev/js/media-queries.js" defer=""></script>
+    <script src="//static.redata.dev/js/include.js" defer=""></script>
+    <script src="//static.redata.dev/js/ui.js" defer></script>
+    <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+  
+    <title>ReData</title>   
+
+</head>
+
+<body>
+    <main>
+
+        <header>
+            <include src="components/header.html"></include>
+            <div id="breadcrumb"></div>
+        </header>
+
+        <article x-data="{ oneYear: false }">
+            <div class="slogan">
+                <h2>Easy way to parse XML</h2>
+            </div>
+
+            <div class="video">
+                <iframe src="https://www.youtube.com/embed/-xdTPUXaW2I?si=NiZ-E_YsBcx4JbkT" title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen=""></iframe>
+            </div>
+            <blockquote>
+                Total privacy. Your data stays with you. No recurring charges!
+            </blockquote>
+
+            <div class="price-block-parent">
+                <div class="price-items">
+                    <aside class="price_block simple">
+                        <h3 class="bold" style="margin-top: 0px; text-align: center; margin-bottom: 0;">Free License</h3>
+                        <h4 style="margin-top: 0px; text-align: center;"><mark>$0</mark>/year</h4>
+                        <p class="green">+ PostgreSQL/SQLite</p>
+                        <p class="green">+ NoSQL</p>
+                        <p class="green">+ TinyNLP Engine</p>
+                        <p class="orange">+/- Multiprocessing</p>
+
+                        <p class="red">- Batch Processing<sup style="font-size: 60%; background-color: rgb(242, 225, 225); color: black;">*10 files in one go</sup></p>
+                        <p class="red">- Premium support</p>
+                    </aside>
+                    <aside class="price_block simple">
+                        <h3 class="bold" style="margin-top: 0px; text-align: center;  margin-bottom: 0;">Standard License</h3>
+                        <h4 style="margin-top: 0px; text-align: center;">
+                            <div style="white-space: nowrap">
+                                <template x-if="!oneYear">
+                                    <mark style="background-color: rgb(218, 228, 241)"></mark>
+                                </template>
+                                <template x-if="oneYear">
+                                    <mark style="background-color: rgb(218, 228, 241)"></mark>
+                                </template>
+                                <span :class="oneYear ? '' : 'selectedPeriod'" @click="oneYear = false">$20 month</span>
+                                / <span :class="oneYear ? 'selectedPeriod' : '' " @click="oneYear = true">$185 year</span>
+                            </div>
+                        </h4>
+
+                        <p class="green">+ PostgreSQL/SQLite</p>
+                        <p class="green">+ NoSQL</p>
+                        <p class="green">+ TinyNLP Engine</p>
+                        <p class="green">+ Multiprocessing</p>
+
+                        <p class="green">+ Batch Processing</p>
+                        <p class="red">- Premium support</p>
+                    </aside>
+                    <aside class="price_block simple">
+                        <h3 class="bold" style="margin-top: 0px; text-align: center; margin-bottom: 0;">Pro License</h3>
+                        <h4 style="margin-top: 0px; text-align: center;"><mark class="">Price on demand</mark></h4>
+                        <p class="green">+ PostgreSQL/SQLite</p>
+                        <p class="green">+ NoSQL (MongoDB, ArangoDB)</p>
+                        <p class="green">+ TinyNLP Engine</p>
+                        <p class="green">+ Multiprocessing</p>
+
+                        <p class="green">+ Batch Processing</p>
+                        <p class="green">+ Premium support</p>
+                    </aside>
+
+                </div>
+
+                
+                <div style="display: flex; align-items: center; justify-content: center;" x-data="{ oneYear: false }">
+                    
+                    <template x-if="!oneYear">
+                        <button 
+                            @click="window.location.href='https://store.payproglobal.com/checkout?products[1][id]=85920&page-template=17291'"
+                            class="large-button button-orange">
+                            Buy License
+                        </button>
+                    </template>
+                
+                    
+                    <template x-if="oneYear">
+                        <button 
+                            @click="window.location.href='https://store.payproglobal.com/checkout?products[1][id]=85217&page-template=17291'"
+                            class="large-button button-orange">
+                            Buy License
+                        </button>
+                    </template>
+                </div>
+                    
+            </div>
+
+
+            <div style="width: 100%; display: flex; flex-direction: column; align-items: center;" id="downloadTable">
+
+                    <div x-data="{currentTab: 'windows'}" class="download-table-tab-wrapper" >
+                        <ul class="download-table-tab-control">
+                            <li>
+                                <button @click="currentTab = 'windows'" :class="{ 'active': currentTab === 'windows' }">Windows</button>
+                            </li>
+                            <li>
+                                <button @click="currentTab = 'linux'" :class="{ 'active': currentTab === 'linux' }">Linux</button>
+                            </li>
+                        </ul>
+
+                        
+
+                            <div  class="download-tab-panel" :class="{ active: currentTab === 'windows' }">
+                                <table border="1">
+                                    <tbody>
+                                        <tr>
+                                            <th>Filename</th>
+                                            <th>Description</th>
+                                            <th>Size</th>
+                                            <th>Link</th>
+                                        </tr>
+                                        <tr>
+                                            <td>SmartXML.exe</td>
+                                            <td>Setup</td>
+                                            <td></td>
+                                            <td><a href="/releases/smartxml/SmartXML.exe">Download</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>SmartXML.rar</td>
+                                            <td>Portable version</td>
+                                            <td></td>
+                                            <td><a href="/releases/smartxml/SmartXML.rar">Download</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                            </div>
+
+                            <div class="download-tab-panel" :class="{ active: currentTab === 'linux' }">
+                                <table border="1">
+                                    <tbody>
+                                        <tr>
+                                            <th>Filename</th>
+                                            <th>Description</th>
+                                            <th>Size</th>
+                                            <th>Link</th>
+                                        </tr>
+                                        <tr>
+                                            <td>SmartXML-deprecated.tar.xz</td>
+                                            <td>Portable version</td>
+                                            <td></td>
+                                            <td><a href="/releases/smartxml/SmartXML-deprecated.tar.xz">Download</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                            </div>
+
+
+
+                        
+
+                    </div>
+
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: center;">
+                <button class="large-button button-blue" onclick="window.location.href='./docs'">
+                    Documentation
+                </button>            
+            </div>
+              
+
+
+        </article>
+    </main>
+
+
+    <include src="/components/footer.html"></include>
+
+
+
+
+
+
+</body>
+
+</html>

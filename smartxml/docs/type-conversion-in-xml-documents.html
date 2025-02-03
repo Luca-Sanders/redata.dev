@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<head>
+  <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+  <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <meta charset="utf-8">
+  <meta name="description" content="How to convert XML types before loading them into the database">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <script src="/js/pre-code-fix.js" defer></script>
+  <script src="//static.redata.dev/js/media-queries.js" defer></script>
+  <script src="//static.redata.dev/js/include.js" defer></script>     
+  <script src="//static.redata.dev/js/ui.js" defer></script> 
+  <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+
+  <title>Type Casting in XML Documents</title>
+</head>
+
+<body>
+    <main>
+
+      <header>
+        <include src="components/header.html"></include>
+        <div id="breadcrumb"></div>
+      </header>
+
+    <article>
+      <h2>Type Casting in XML Documents</h2>
+
+      <p>By default, all tag values are extracted as text. That is, if the tag value is, for example, <code>123</code>, it will be extracted as a string <code>"123"</code>.</p>
+      <p>SmartXML provides several mechanisms for handling different types, described below.</p>
+      
+        <h3>Handling Simple Cases:</h3>
+        <p>In cases where data can be unambiguously interpreted as <i>integer</i>, <i>float</i>, or <i>bool</i>, you can use the <span class="ui-item">Rules</span>⮞<span class="ui-item">Tag Casting Rules</span> tab to specify which tags should be cast to which types.</p>
+        <div class="img-container">
+          <img src="images/tag-casting-rules_empty.png" />
+        </div>
+      
+
+      <h3>Handling Complex Cases:</h3>
+      <p>In cases where data needs cleaning or modification before extraction, SmartXML offers an embedded TinyNLP engine based on Red/Parse. This engine allows performing preprocessing tasks on data that cannot be achieved using regular expressions or grammatically unsupported languages.</p>
+      <p>It's worth noting that <a href="https://github.com/red/docs/blob/master/en/parse.adoc">Red/Parse</a> provides only a small subset of functions for text processing and cannot replace a full-fledged NLP processing. However, in certain situations, its capabilities may be sufficient for solving specific tasks.</p>
+      
+      <p>While using TinyNLP requires writing code, for processing most XML, this may not be necessary at all, or the amount of code will be minimal. It is also assumed that testing and debugging should take place directly in the <a href="https://red-lang.org/">red-lang</a> language interpreter.</p>
+      
+      <p>Let's assume we have the following improperly filled XML:</p>
+      
+      <div>
+
+      <pre><code>
+        <span class="tag-name">&lt;data&gt;</span>
+          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">John Doe</span><span class="tag-name">&lt;/name&gt;</span>
+          <span class="tag-name">&lt;age&gt;</span><span class="tag-value">32</span><span class="tag-name">&lt;/age&gt;</span>
+          <span class="tag-name">&lt;height&gt;</span><span class="tag-value">185.5</span><span class="tag-name">&lt;/height&gt;</span>
+          <span class="tag-name">&lt;salary&gt;</span><span class="tag-value">245000€</span><span class="tag-name">&lt;/salary&gt;</span>
+          <span class="tag-name">&lt;contactInfo&gt;</span><span class="tag-value">phone: +31 619653239 email: mail@example.org</span><span class="tag-name">&lt;/contactInfo&gt;</span>
+          <span class="tag-name">&lt;isCitizen&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/isCitizen&gt;</span>
+          <span class="tag-name">&lt;MaritalStatus&gt;</span><span class="tag-value">Single</span><span class="tag-name">&lt;/MaritalStatus&gt;</span>
+        <span class="tag-name">&lt;/data&gt;</span>
+      </code></pre>
+
+      </div>
+
+      <p>Project name: <span class="code-inline-snippet">complex-types-sample</span></p>  
+      <p>One section <span class="code-inline-snippet">Section-A</span> is created in the project, and it contains one subsection named <span class="code-inline-snippet">sample</span></p>
+      <p>The test XML is located in the directory: <span class="ui-item">data-samples/complex-types-sample/example.xml</span></p>
+      
+      <p>This XML has the following issues:</p>  
+      <ul>
+        <li><span class="code-inline-snippet">salary</span> contains a currency symbol where there should be a number</li>
+        <li><span class="code-inline-snippet">contactInfo</span> contains both a phone number and an email address</li>
+        <li><span class="code-inline-snippet">isCitizen</span> and <span class="code-inline-snippet">MaritalStatus</span> are clearly boolean types</li>
+        <li>Additionally, let's assume we want to convert the exchange rate from euros to dollars in real-time</li>
+      </ul>
+      
+      <p>We will describe the data in the <span class="code-inline-snippet">sample</span> subsection in the format of an intermediate representation. We will also specify the fields we want to extract from the original data and save the result.</p>
+      
+    <div>
+
+      <pre><code>
+        <span class="tag-name">name</span>: <span class="tag-value">none</span>
+        <span class="tag-name">age</span>: <span class="tag-value">none</span>
+        <span class="tag-name">height</span>: <span class="tag-value">none</span>
+        <span class="tag-name">contact_info</span>: <span class="tag-value">none</span>
+        <span class="tag-name">contact_phone</span>: <span class="tag-value">none</span>
+        <span class="tag-name">contact_email</span>: <span class="tag-value">none</span>
+        <span class="tag-name">salary</span>: <span class="tag-value">none</span>
+        <span class="tag-name">salary_currency</span>: <span class="tag-value">none</span>
+        <span class="tag-name">salary_in_usd</span>: <span class="tag-value">none</span>
+        <span class="tag-name">is_sitizen</span>: <span class="tag-value">none</span>
+        <span class="tag-name">is_marital</span>: <span class="tag-value">none</span>
+      </code></pre>
+    
+  </div>
+      
+  <p>Let's press <span class="ui-item">Morphology</span> and establish correspondences between the names in the intermediate representation and the tags in the XML. As a result, we get the following representation:</p>
+
+    
+    <div class="code">
+      <pre><code>
+          <span class="tag-name">name</span>: <span class="tag-value">"John Doe"</span>
+          <span class="tag-name">age</span>: <span class="tag-value">"32"</span>
+          <span class="tag-name">height</span>: <span class="tag-value">"185.5"</span>
+          <span class="tag-name">contact_info</span>: <span class="tag-value"> "phone: +31 619653239 email: mail@example.org"</span>
+          <span class="tag-name tag-name-active">contact_phone</span>: <span class="tag-value">none</span>
+          <span class="tag-name tag-name-active">contact_email</span>: <span class="tag-value">none</span>
+          <span class="tag-name">salary</span>: <span class="tag-value">"245000€"</span>
+          <span class="tag-name tag-name-active">salary_currency</span>: <span class="tag-value">none</span>
+          <span class="tag-name tag-name-active">salary_in_usd</span>: <span class="tag-value">none</span>
+          <span class="tag-name">is_sitizen</span>: <span class="tag-value">"Yes"</span>
+          <span class="tag-name">is_marital</span>: <span class="tag-value">"Single"</span>
+      </code></pre>
+    
+    </div>
+
+  <p>Now we need to create rules filling in the fields with the value <code>none</code> with data.</p>
+  <p>Open the project file in a text editor: <span class="code-inline-snippet">projects/complex-types-sample/rules/complex-extract-rules.red</span>. In it, for each tag of each section, you can specify rules for its processing or splitting into other tags.</p>
+  <p>By default, it only contains the names of the created sections and looks like this:</p>
+  
+      <div>
+        <pre><code>
+            <span class="tag-name">section-A: []</span>
+        </code></pre>
+      </div>
+
+    <p>The format for writing rules is as follows:</p>
+
+
+
+      <div>
+        <pre><code>
+          <span class="tag-name-active">tag-name</span>: [
+              <span class="tag-name-active">derivative-tagA</span>: [ 
+              <span class="comment-text">; processing of <span class="tag-name-active">tag-name</span> content. It's value in <span class="tag-value">tag-value</span> variable</span>
+              ]
+              <span class="tag-name-active">derivative-tagB</span>: [ 
+              <span class="comment-text">; processing of <span class="tag-name-active">tag-name</span> content. It's value in <span class="tag-value">tag-value</span> variable</span>
+              ]
+              <span class="tag-name-active">derivative-tagC</span>: [ 
+              <span class="comment-text">; processing of <span class="tag-name-active">tag-name</span> content. It's value in <span class="tag-value">tag-value</span> variable</span>
+              ]              
+          ]
+          <span class="tag-name-active">another-tag-name</span>: [
+              <span class="tag-name-active">another-tag-name</span>: [ 
+              <span class="comment-text">; processing of <span class="tag-name-active">another-tag-name</span> content. It's value in <span class="tag-value">tag-value</span> variable</span>
+              ]
+              <span class="tag-name-active">another-tag-derivativeA</span>: [ 
+              <span class="comment-text">; processing of <span class="tag-name-active">another-tag-name</span> content. It's value in <span class="tag-value">tag-value</span> variable</span>
+              ]
+          ]
+        </code></pre>
+    </div>     
+
+    <p>Inside the tag to be processed, there must be at least one child. If the child's name matches the parent's name, it means processing the parent tag itself.</p>
+    <p><code><span class="tag-value">tag-value</span></code> is a variable that contains the value of the processed tag. Passing <code><span class="tag-value">tag-value</span></code> happens implicitly. You just need to write the processing of the <code><span class="tag-value">tag-value</span></code> variable. For testing purposes, you can replace it with the required line with data, but when inserting into the rule, return the name <code><span class="tag-value">tag-value</span></code>.</p>
+    <p>Processing values occurs from top to bottom. If you change <code><span class="tag-value">tag-value</span></code> at step A, then at step B, you will get the modified value.</p>
+    <p>Each block must have a <code>return</code> with a value. <code>return</code> can be implicit if the function itself returns the modified value (for example, <code>replace</code>). Also, the last value of the function will be the return value.</p>
+    
+      <div>
+      <pre><code>
+       section-A: [
+              <span class="tag-name-active">salary</span>: [
+                  <span class="tag-name-active">salary</span> [
+                      <span class="comment-text">; remove the currency symbol. copy allows not to change <span class="tag-value">tag-value</span></span>
+                      <span class="comment-text">; value will be set for the salary itself</span>
+                      replace copy <span class="tag-value">tag-value</span> "$" ""
+                      replace copy <span class="tag-value">tag-value</span> "€" ""
+                  ] 
+                  <span class="tag-name-active">salary_currency</span>: [
+                      <span class="comment-text">; set the value of the salary_currency tag based on the currency type</span>
+                      result: none
+                      if find <span class="tag-value">tag-value</span> "$" [result: "USD"]
+                      if find <span class="tag-value">tag-value</span> "€" [result: "EUR"]
+                      return result
+                  ]
+                  <span class="tag-name-active">salary_in_usd</span>: [
+                      <span class="comment-text">; remove currency characters from the <span class="tag-value">tag-value</span>, since now we just need a number here</span>
+                      replace <span class="tag-value">tag-value</span> "$" ""
+                      replace <span class="tag-value">tag-value</span> "€" ""
+                      <span class="comment-text">; get the current dollar rate from an external service</span>
+                      <span class="comment-text">; check docs https://fixer.io/ to get API Key</span>
+                      data: load-json read http://data.fixer.io/api/latest?access_key=[your-api-key]
+                      <span class="comment-text">; print ["currency:" data/rates/USD] ; print if necessary</span>
+                      <span class="comment-text">; multiply the dollar rate by the current currency rate</span>
+                      <span class="comment-text">; and return it as the value of <span class="tag-name-active">salary_in_usd</span></span>
+                      return round/even (data/rates/USD * (to-integer <span class="tag-value">tag-value</span>))
+                  ]
+              ]
+          
+              <span class="tag-name-active">contact_info</span>: [
+                  <span class="comment-text">; extract from contact_info phone</span>
+                  <span class="tag-name-active">contact_phone</span>: [
+                      parse <span class="tag-value">tag-value</span> [thru "phone:" copy phone to "email:"]
+                      return phone
+                  ]
+                  <span class="comment-text">; extract from contact_info email</span>
+                  <span class="tag-name-active">contact_email</span>: [
+                      parse <span class="tag-value">tag-value</span> [thru "email:" copy email to end]
+                      return email
+                  ]
+               ]
+
+               <span class="tag-name-active">is_marital</span>: [
+                  <span class="comment-text">; replacement to text that can be converted to type</span>
+                  <span class="tag-name-active">is_marital</span>: [
+                      replace <span class="tag-value">tag-value</span> "Single" "false"
+                      replace <span class="tag-value">tag-value</span> "Married" "true"
+               ]
+           ]
+               
+    ] 
+      </code></pre>
+      </div>
+        
+    
+    <p>This example only illustrates the general principles of complex type processing and is not universal.</p>
+    <p>The same tasks can be solved with different code.</p>
+    <p>The example demonstrates calling an external service to get the exchange rate. The example is purely illustrative and is not recommended for streaming processing of a large number of XML files.</p>
+    <blockquote>We provide assistance in writing rules for complex processing within <i>Premium Support</i></blockquote>
+    
+
+    <div>
+      <pre><code>
+          <span class="tag-name">name</span>: <span class="tag-value">"John Doe"</span>
+          <span class="tag-name">age</span>: <span class="tag-value">"32"</span>
+          <span class="tag-name">height</span>: <span class="tag-value">"185.5"</span>
+          <span class="tag-name">contact_info</span>: <span class="tag-value">"phone: +31 619653239 email: mail@example.org"</span>
+          <span class="tag-name">contact_phone</span>: <span class="tag-value">"+31 619653239"</span>
+          <span class="tag-name">contact_email</span>: <span class="tag-value">"mail@example.org"</span>
+          <span class="tag-name">salary</span>: <span class="tag-value">"245000"</span>
+          <span class="tag-name">salary_currency</span>: <span class="tag-value">"EUR"</span>
+          <span class="tag-name">salary_in_usd</span>: <span class="tag-value">267435.0</span>
+          <span class="tag-name">is_sitizen</span>: <span class="tag-value">"Yes"</span>
+          <span class="tag-name">is_marital</span>: <span class="tag-value">"false"</span>
+      </code></pre>
+      </div>
+ 
+
+    <p>
+      Please note that type casting occurred only for <code>salary_in_usd</code> as it is explicitly specified in the action on the <code>to-integer <span class="tag-value">tag-value</span></code> tag.
+    </p>
+    <p>Although the rule performs operations on <code>salary</code> itself, there is no type casting operation among them. You can either modify the rule itself or perform type casting on the <span class="ui-item">Rules</span>⮞<span class="ui-item">Tag Casting Rules</span> tab.</p>
+    <p>The content of <code>age</code> and <code>height</code> allows type casting to an integer without additional complex parsing rules.</p>
+    <p>SmartXML allows converting text strings like <code>yes</code>, <code>no</code>, <code>on</code>, <code>off</code>, <code>true</code>, <code>false</code> to a boolean type without additional complex rules and code. However, for the <code><span class="tag-name">is_marital</span>: <span class="tag-value">"Single"</span></code> tag, you need to write a rule that initially replaces the specified string with one of the specified values, and then the value itself can be converted to a boolean type on the <span class="ui-item">Tag Casting Rules</span> tab.</p>
+    <p>Please note that the letter case does not matter, and <code>yes</code>, <code>Yes</code>, and <code>YES</code> will be processed the same way.</p>
+    
+    <div class="img-container">
+      <img src="images/complex-types-sample/tag-casting.png">
+  </div>
+
+  <p>Now, after clicking the <span class="ui-item">Parse</span> button, you will obtain an intermediate representation with correctly casted types:</p>
+
+  <div>
+    <pre><code>
+        <span class="tag-name">name</span>: <span class="tag-value">"John Doe"</span>
+        <span class="tag-name">age</span>: <span class="tag-value">32</span>
+        <span class="tag-name">height</span>: <span class="tag-value">185</span>
+        <span class="tag-name">contact_info</span>: <span class="tag-value">"phone: +31 619653239 email: mail@example.org"</span>
+        <span class="tag-name">contact_phone</span>: <span class="tag-value">"+31 619653239"</span>
+        <span class="tag-name">contact_email</span>: <span class="tag-value">"mail@example.org"</span>
+        <span class="tag-name">salary</span>: <span class="tag-value">245000</span>
+        <span class="tag-name">salary_currency</span>: <span class="tag-value">"EUR"</span>
+        <span class="tag-name">salary_in_usd</span>: <span class="tag-value">267435.0</span>
+        <span class="tag-name">is_sitizen</span>: <span class="tag-value">true</span>
+        <span class="tag-name">is_marital</span>: <span class="tag-value">false</span>
+    </code></pre>
+    </div>
+   
+
+<p>Now, if necessary, the string <code><span class="tag-name">contact_info</span>: <span class="tag-value">"phone: +31 619653239 email: mail@example.org"</span></code> can be removed.</p>
+
+    <p>JSON representation:</p>
+    <div>
+      <pre><code>
+      {
+         "name": <span class="tag-value">"John Doe"</span>,
+         "age": <span class="tag-value">32</span>,
+         "height": <span class="tag-value">185</span>,
+         "contact_phone": <span class="tag-value">"+31 619653239"</span>,
+         "contact_email": <span class="tag-value">"mail@example.org"</span>,
+         "salary": <span class="tag-value">245000</span>,
+         "salary_currency": <span class="tag-value">"EUR"</span>,
+         "salary_in_usd": <span class="tag-value">268673.0</span>,
+         "is_sitizen": <span class="tag-value">true</span>,
+         "is_marital": <span class="tag-value">false</span>
+      }
+      </code></pre>
+    </div>
+ 
+
+    <p>SQL representation:</p>
+
+    <div>
+      <pre><code>
+      INSERT INTO <span class="table-name">sample</span> ("name", "age", "height", "contact_phone", "contact_email", "salary", "salary_currency", "salary_in_usd", "is_sitizen", "is_marital")
+           VALUES (<span class="tag-value">'John Doe'</span>, <span class="tag-value">32</span>, <span class="tag-value">185</span>, <span class="tag-value">'+31 619653239'</span>, <span class="tag-value">'mail@example.org'</span>, <span class="tag-value">245000</span>, <span class="tag-value">'EUR'</span>, <span class="tag-value">268673.0</span>, <span class="tag-value">true</span>, <span class="tag-value">false</span>);
+      </code></pre>
+      </div> 
+ 
+
+      
+    </article>
+
+  </main>
+  <include src="/components/footer.html"></include>
+</body>
+
+</html>

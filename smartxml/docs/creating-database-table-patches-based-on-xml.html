@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+
+<head>
+  <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+  <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <meta charset="utf-8">
+  <meta name="description" content="An example of how you can extract data from XML and use that data to update records in a database">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <script src="/js/pre-code-fix.js" defer></script>
+  <script src="//static.redata.dev/js/media-queries.js" defer></script>
+  <script src="//static.redata.dev/js/include.js" defer></script>  
+  <script src="//static.redata.dev/js/ui.js" defer></script>
+  <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+  
+  <title>Creating database table patches based on XML</title>
+</head>
+
+<body>
+    <main>
+
+      <header>
+        <include src="components/header.html"></include>
+        <div id="breadcrumb"></div>
+      </header>      
+
+      <article>
+        <h2>Creating database table patches based on XML</h2>
+
+        <p>Example is based on the project: <a href="/bringing-different-subtypes-of-xml-documents-to-a-generalized-form.html">credit-forms-unification-sample</a>.
+          The example demonstrates the ability to update fields of a table in an existing database with data extracted from XML
+          documents.</p>
+        
+        <p>Open the project <span class="code-inline-snippet">credit-forms-patching-sample</span></p>
+        
+
+        <p>
+          The table <span class="table-name">xml_files</span>, which stores references to the original XML files, has the following
+          schema (you can read about the minimal necessary database schema for operation <a href="jobs-settings.html">here</a>):
+        </p>
+        
+
+        <div style="text-align: center;">
+          <pre><code>
+          CREATE TABLE <span class="table-name">xml_files</span> ( 
+            "id" Integer PRIMARY KEY AUTOINCREMENT,
+            "xml_path" Text,
+            "parsing_status" Text,
+            "processed_date" Numeric,
+            "is_patch" Text,
+            CONSTRAINT "unique_tax_number" UNIQUE (tax_number)
+          );
+            </code></pre>
+        </div>
+
+        <p>
+          Attention:
+        <ul>
+          <li>
+            In this example, the <span class="ui-item">filling_percent_stat</span> field is missing.
+            Make sure that the corresponding setting <span class="ui-item">Write to DB columns filling stat</span>
+            is turned off.
+        </li>
+        
+          <li>
+            When generating the <code>UPDATE</code> expression, the <code>WHERE</code> clause uses the column names on which
+            uniqueness constraints are set. For example:
+
+            <div class="code_big" style="text-align: center;">
+              <pre><code>
+            UPDATE credits_forms SET
+              "phone_number" = '+31 20 83115136', 
+              "email" = 'lisa.newmail@example.com', 
+              "is_married" = 'Married'
+            WHERE "tax_number" ='456-78-9012';
+          </code></pre>
+  
+            </div>
+            Without this, the generation of <code>UPDATE</code> statements is not possible. Uniqueness constraints are required both
+            at the database level and in the application settings, as will be shown below.
+          </li>
+        </ul>
+
+        <p>
+          Overall view of the filled table:
+        </p>
+        <div class="table__wrap">
+          <table>
+            <tr>
+              <th>id</th>
+              <th>xml_path</th>
+              <th>parsing_status</th>
+              <th>processed_date</th>
+              <th>is_patch</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>data-samples/credit-forms-patching-sample/barclays.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>data-samples/credit-forms-patching-sample/barclays_patch.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>true</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>data-samples/credit-forms-patching-sample/deutschebank.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>data-samples/credit-forms-patching-sample/deutschebank_patch.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>true</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>data-samples/credit-forms-patching-sample/rabobank.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>data-samples/credit-forms-patching-sample/rabobank_patch.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>true</td>
+            </tr>
+          </table>
+        </div>
+
+        <p>The table includes the field <code>is_patch</code>. Since it is assumed that patches should be applied
+          to data already loaded into the database, we need to somehow separate the documents into groups. At first, the parsing and loading of the
+          original XML should be performed, and only then apply the patches to them. This will require the creation of two
+          <code>Job</code>. The first <code>Job</code> will parse and load the main documents into the database. The second will apply patches to them. The field name can be anything.
+          More information on how to create a <code>Job</code> can be found <a
+              href="./jobs-settings.html">here</a>.</p>
+      
+      <p>Examples of documents that will be used as patches for existing tables:</p>
+      
+
+        <div>
+
+          <div>
+            <h5>DeutscheBank:</h5>
+              <pre><code>
+        <span class="tag-name">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+        <span class="tag-name">&lt;UpdateInfo&gt;</span>
+          <span class="tag-name">&lt;ApplicantInfo&gt;</span>
+            <span class="tag-name">&lt;FullName&gt;</span>
+              <span class="tag-name">&lt;FirstName&gt;</span><span class="tag-value">Sofia</span><span class="tag-name">&lt;/FirstName&gt;</span>
+              <span class="tag-name">&lt;LastName&gt;</span><span class="tag-value">Lorenzo</span><span class="tag-name">&lt;/LastName&gt;</span>
+            <span class="tag-name">&lt;/FullName&gt;</span>
+            <span class="tag-name">&lt;DateOfBirth&gt;</span><span class="tag-value">1992-03-24</span><span class="tag-name">&lt;/DateOfBirth&gt;</span>
+            <span class="tag-name">&lt;MaritalStatus&gt;</span><span class="tag-value tag-name-active">Single</span><span class="tag-name">&lt;/MaritalStatus&gt;</span>
+            <span class="tag-name">&lt;TaxIdentificationNumber&gt;</span><span class="tag-value">545-56-7190</span><span class="tag-name">&lt;/TaxIdentificationNumber&gt;</span>
+            <span class="tag-name">&lt;ContactInfo&gt;</span>
+              <span class="tag-name">&lt;EmailAddress&gt;</span><span class="tag-value tag-name-active">sofia.newmail@example.com</span><span class="tag-name">&lt;/EmailAddress&gt;</span>
+              <span class="tag-name">&lt;PhoneNumber&gt;</span><span class="tag-value tag-name-active">+39 02 51821810</span><span class="tag-name">&lt;/PhoneNumber&gt;</span>
+            <span class="tag-name">&lt;/ContactInfo&gt;</span>
+          <span class="tag-name">&lt;/ApplicantInfo&gt;</span>
+        <span class="tag-name">&lt;/UpdateInfo&gt;</span>
+        
+      </code></pre>
+          
+       
+          </div>
+
+
+          <div>
+            <h5>Barclays:</h5>
+              <pre><code>
+      <span class="tag-name">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+      <span class="tag-name">&lt;ContactInfoUpdate&gt;</span>
+        <span class="tag-name">&lt;Applicant&gt;</span>
+          <span class="tag-name">&lt;Name&gt;</span>
+            <span class="tag-name">&lt;First&gt;</span><span class="tag-value">Lisa</span><span class="tag-name">&lt;/First&gt;</span>
+            <span class="tag-name">&lt;Last&gt;</span><span class="tag-value">Martin</span><span class="tag-name">&lt;/Last&gt;</span>
+          <span class="tag-name">&lt;/Name&gt;</span>
+          <span class="tag-name">&lt;DateOfBirth&gt;</span><span class="tag-value">1987-12-12</span><span class="tag-name">&lt;/DateOfBirth&gt;</span>
+          <span class="tag-name">&lt;MaritalStatus&gt;</span><span class="tag-value tag-name-active">Married</span><span class="tag-name">&lt;/MaritalStatus&gt;</span>
+          <span class="tag-name">&lt;TaxID&gt;</span><span class="tag-value">456-78-9012</span><span class="tag-name">&lt;/TaxID&gt;</span>
+          <span class="tag-name">&lt;ContactInfo&gt;</span>
+            <span class="tag-name">&lt;Email&gt;</span><span class="tag-value tag-name-active">lisa.newmail@example.com</span><span class="tag-name">&lt;/Email&gt;</span>
+            <span class="tag-name">&lt;Phone&gt;</span><span class="tag-value tag-name-active">+31 20 83115136</span><span class="tag-name">&lt;/Phone&gt;</span>
+          <span class="tag-name">&lt;/ContactInfo&gt;</span>
+        <span class="tag-name">&lt;/Applicant&gt;</span>
+      <span class="tag-name">&lt;/ContactInfoUpdate&gt;</span>
+    </code></pre>
+            
+          </div>
+
+          <div>
+            <h5>Rabobank:</h5>
+              <pre><code>
+    <span class="tag-name">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+    <span class="tag-name">&lt;LoanApplicationUpdate&gt;</span>
+      <span class="tag-name">&lt;Applicant&gt;</span>
+        <span class="tag-name">&lt;FullName&gt;</span>
+          <span class="tag-name">&lt;FirstName&gt;</span><span class="tag-value">John</span><span class="tag-name">&lt;/FirstName&gt;</span>
+          <span class="tag-name">&lt;LastName&gt;</span><span class="tag-value">Smith</span><span class="tag-name">&lt;/LastName&gt;</span>
+        <span class="tag-name">&lt;/FullName&gt;</span>
+        <span class="tag-name">&lt;isMarried&gt;</span><span class="tag-value tag-name-active">TRUE</span><span class="tag-name">&lt;/isMarried&gt;</span>
+        <span class="tag-name">&lt;DateOfBirth&gt;</span><span class="tag-value">1980-03-25</span><span class="tag-name">&lt;/DateOfBirth&gt;</span>
+        <span class="tag-name">&lt;SocialSecurityNumber&gt;</span><span class="tag-value">987-65-4321</span><span class="tag-name">&lt;/SocialSecurityNumber&gt;</span>
+        <span class="tag-name">&lt;ContactInformation&gt;</span>
+          <span class="tag-name">&lt;Email&gt;</span><span class="tag-value tag-name-active">john.smith.newmail@example.com</span><span class="tag-name">&lt;/Email&gt;</span>
+          <span class="tag-name">&lt;Phone&gt;</span><span class="tag-value tag-name-active">+44 20 12345678</span><span class="tag-name">&lt;/Phone&gt;</span>
+        <span class="tag-name">&lt;/ContactInformation&gt;</span>
+      <span class="tag-name">&lt;/Applicant&gt;</span>
+    <span class="tag-name">&lt;/LoanApplicationUpdate&gt;</span>    
+  </code></pre>
+       
+        
+          </div>
+
+        </div>
+
+        <p>As an example, we will be updating the fields:
+
+          <code>phone_number</code>,
+          <code>email</code>,
+          <code>is_married</code>
+        </p>
+
+        <h4>Overall Project View:</h4>
+
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/opened-project-2.png" />
+        </div>
+
+        <p>The structure describing the data for updating must have a field <code>tag</code> with a value like:
+          <code><span class="tag-value">"update_tableNameForUpdating"</span></code>. In our case: <code><span class="tag-name">tag</span>: <span class="tag-value">"update_credits_forms"</span></code>.</p>
+        
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/opened-project-1.png" />
+        </div>
+        <br>
+
+
+        <p>Uniqueness settings:
+          <span class="ui-item">Rules</span> ⮞ <span class="ui-item">Database Constraints</span> need to specify that
+          in the tables <code>credits_forms</code> and <code>applicant_finances</code>, the column <code>tax_number</code> is unique
+          (in case of uniqueness for a group of columns, you should specify their names separated by a space).
+        </p>
+        
+
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/db-constraints.png" />
+        </div>
+
+        <p>
+          Also, it is necessary to specify the name of the node in the intermediate representation: <code>applicant_finance</code>, as well as its variations in XML:
+          <code>FinancialInfo EmploymentInformation</code>:
+        </p>
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/grow_rules.png" />
+        </div>
+        
+        <p>
+          As seen from the intermediate representation, <code>tax_number</code> is located at the root. Specify that it
+          needs to be passed to each child of the intermediate representation from which the table will be generated:
+        </p>
+        
+
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/injection-rules.png" />
+        </div>
+
+
+        <p>Table structures for extracting data from <span class="table-name">credit_forms</span> and <span class="table-name">applicant_finances</span>:</p>
+
+      <div class="same-height-and-width">
+
+      <pre><code>
+      <span class="code-token">CREATE TABLE</span> <span class="table-name">credits_forms</span> (
+        <span class="tag-name">"id"</span> <span class="code-token">INTEGER</span> <span class="code-token">PRIMARY</span> <span class="code-token">KEY</span>,
+        <span class="tag-name">"first_name"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">"last_name"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">"tax_number"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">"phone_number"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">"email"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">"is_married"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">CONSTRAINT "unique_tax_number" UNIQUE (tax_number)</span>
+      );
+      </code></pre>
+        
+      <pre><code>
+      <span class="code-token">CREATE TABLE</span> <span  class="table-name">applicant_finances</span> (
+        <span class="tag-name">"id"</span> <span class="code-token">INTEGER</span> <span class="code-token">PRIMARY</span> <span class="code-token">KEY</span>,
+        <span class="tag-name">"tax_number"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">"credit_rating"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">"loan_amount"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">"salary"</span> <span class="code-token">Text</span>,
+        <span class="tag-name">CONSTRAINT "unique_tax_number" UNIQUE (tax_number)</span>
+       );
+      </code></pre>
+
+
+          </div>
+      
+
+
+        <p>Pay attention that in this example, all data is loaded into the database as text. Type conversion rules are covered in a separate article.</p>
+
+        <p>Configure the database connection on the <span class="ui-item">Settings</span> ⮞ <span class="ui-item">Database</span> tab.</p>
+        
+
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/sqlite-settings.png" />
+        </div>
+
+
+
+        <ul>
+          <li>
+            On the <span class="ui-item">Settings</span> ⮞ <span class="ui-item">General</span> tab, specify the missing part of the path to the directory where the test XML files are located in the <span class="ui-item">XML Folder</span> field.
+          </li>
+          <li>
+            Check the <span class="ui-item">Connect to DB at project opening</span> option (Requires restart).
+          </li>
+          <li>
+            Make sure that <span class="ui-item">Source Database</span> and <span class="ui-item">Target Database</span> are set to <code>SQLite</code>.
+          </li>
+          <li>
+            Save the changes.
+          </li>
+        </ul>
+        
+
+
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/general-settings.png" />
+        </div>
+
+        <p>
+          After restarting, on the <span class="ui-item">Database</span> tab, you can request the number of files awaiting processing by clicking <span class="ui-item">Get XML Count</span>.
+        </p>
+        
+
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/get-count.png" />
+        </div>
+
+        <p>
+          As mentioned earlier, it is necessary to process files containing complete data first and only then apply patches to them. For this, we will create two <code>Job</code>.
+        </p>
+        <p>In the first <code>Job</code>, specify that you need to select data from the <span class="table-name">xml_files</span> table where the <code>is_patch</code> column contains <code>NULL</code>. In the second one, <code>NOT NULL</code></p>
+        
+
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/two_jobs.png" />
+        </div>
+        <p>
+          Be sure to save the changes for both the <code>Job</code> and the entire project.
+        </p>
+        <p>Now, when you click on <span class="ui-item">Get XML Count</span>, it will show that the first <code>Job</code> has only 3 files to process.</p>
+        
+
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/two_jobs-selected_1.png" />
+        </div>
+
+        <p>Clicking on <span class="ui-item">Start Processing</span> will initiate the processing.</p>
+        <p>Table structure after processing completion.</p>
+        
+
+        <p>
+          <span class="table-name">xml_files</span>:
+
+        </p>
+         
+        <div class="table__wrap">
+          <table>
+            <tr>
+              <th>id</th>
+              <th>xml_path</th>
+              <th>parsing_status</th>
+              <th>processed_date</th>
+              <th>is_patch</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>data-samples/credit-forms-patching-sample/barclays.xml</td>
+              <td>success</td>
+              <td>2024-03-21 16:57</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>data-samples/credit-forms-patching-sample/barclays_patch.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>true</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>data-samples/credit-forms-patching-sample/deutschebank.xml</td>
+              <td>success</td>
+              <td>2024-03-21 16:57</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>data-samples/credit-forms-patching-sample/deutschebank_patch.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>true</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>data-samples/credit-forms-patching-sample/rabobank.xml</td>
+              <td>success</td>
+              <td>2024-03-21 16:57</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>data-samples/credit-forms-patching-sample/rabobank_patch.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>true</td>
+            </tr>
+          </table>
+        </div>
+        
+        <p>
+          <span class="table-name">credits_forms</span>:
+        </p>
+
+        <div class="table__wrap">
+          <table>
+            <tr>
+              <th>id</th>
+              <th>first_name</th>
+              <th>last_name</th>
+              <th>tax_number</th>
+              <th>phone_number</th>
+              <th>email</th>
+              <th>is_married</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>John</td>
+              <td>Smith</td>
+              <td>987-65-4321</td>
+              <td>+44 20 12345678</td>
+              <td>john.smith@example.com</td>
+              <td>TRUE</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Sofia</td>
+              <td>Lorenzo</td>
+              <td>545-56-7190</td>
+              <td>+39 02 98765432</td>
+              <td>sofia.l@example.com</td>
+              <td>Married</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Lisa</td>
+              <td>Martin</td>
+              <td>456-78-9012</td>
+              <td>+31 20 98765431</td>
+              <td>lisa.m@example.com</td>
+              <td>Single</td>
+            </tr>
+          </table>
+        </div>
+
+        <p>
+          <span class="table-name">applicant_finances</span>:
+        </p>
+
+        <div class="table__wrap">
+          <table>
+            <tr>
+              <th>id</th>
+              <th>tax_number</th>
+              <th>credit_rating</th>
+              <th>loan_amount</th>
+              <th>salary</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>987-65-4321</td>
+              <td>800</td>
+              <td>50000.00</td>
+              <td>75000.50</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>545-56-7190</td>
+              <td>710</td>
+              <td>42000.00</td>
+              <td>50000.75</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>456-78-9012</td>
+              <td>750</td>
+              <td>48000.00</td>
+              <td>71000</td>
+            </tr>
+          </table>
+        </div>
+
+
+        <p>Switch to <code>Job</code> 2 and start processing XML files containing patches for the data:</p>
+
+        <div class="img-container">
+          <img src="images/credit-forms-patching-sample/two_jobs-selected_2.png" />
+        </div>
+
+        <p>
+          The final view of the <span class="table-name">xml_files</span> table. All files have been processed:
+        </p>
+        
+
+        <div class="table__wrap">
+          <table>
+            <tr>
+              <th>id</th>
+              <th>xml_path</th>
+              <th>parsing_status</th>
+              <th>processed_date</th>
+              <th>is_patch</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>data-samples/credit-forms-patching-sample/barclays.xml</td>
+              <td>success</td>
+              <td>2024-03-10 17:52</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>data-samples/credit-forms-patching-sample/barclays_patch.xml</td>
+              <td>success</td>
+              <td>2024-03-10 17:52</td>
+              <td>true</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>data-samples/credit-forms-patching-sample/deutschebank.xml</td>
+              <td>success</td>
+              <td>2024-03-10 17:52</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>data-samples/credit-forms-patching-sample/deutschebank_patch.xml</td>
+              <td>success</td>
+              <td>2024-03-10 17:52</td>
+              <td>true</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>data-samples/credit-forms-patching-sample/rabobank.xml</td>
+              <td>success</td>
+              <td>2024-03-10 17:52</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>data-samples/credit-forms-patching-sample/rabobank_patch.xml</td>
+              <td>success</td>
+              <td>2024-03-10 17:52</td>
+              <td>true</td>
+            </tr>
+          </table>
+        </div>
+
+        <p>Updated data in the table:</p>
+
+
+        <div class="table__wrap">
+          <table>
+            <tr>
+              <th>id</th>
+              <th>first_name</th>
+              <th>last_name</th>
+              <th>tax_number</th>
+              <th>phone_number</th>
+              <th>email</th>
+              <th>is_married</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>John</td>
+              <td>Smith</td>
+              <td>987-65-4321</td>
+              <td>+44 20 12345678</td>
+              <td style="background-color: rgb(221, 250, 215);">john.smith.newmail@example.com</td>
+              <td>TRUE</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Sofia</td>
+              <td>Lorenzo</td>
+              <td>545-56-7190</td>
+              <td style="background-color: rgb(221, 250, 215);">+39 02 51821810</td>
+              <td style="background-color: rgb(221, 250, 215);">sofia.newmail@example.com</td>
+              <td>Single</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Lisa</td>
+              <td>Martin</td>
+              <td>456-78-9012</td>
+              <td style="background-color: rgb(221, 250, 215);">+31 20 83115136</td>
+              <td style="background-color: rgb(221, 250, 215);">lisa.newmail@example.com</td>
+              <td style="background-color: rgb(221, 250, 215);">Married</td>
+            </tr>
+          </table>
+        </div>
+
+        <p>Old data for comparison:</p>
+
+
+        <div class="table__wrap">
+          <table>
+            <tr>
+              <th>id</th>
+              <th>first_name</th>
+              <th>last_name</th>
+              <th>tax_number</th>
+              <th>phone_number</th>
+              <th>email</th>
+              <th>is_married</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>John</td>
+              <td>Smith</td>
+              <td>987-65-4321</td>
+              <td>+44 20 12345678</td>
+              <td style="background-color: antiquewhite;">john.smith@example.com</td>
+              <td>TRUE</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Sofia</td>
+              <td>Lorenzo</td>
+              <td>545-56-7190</td>
+              <td style="background-color: antiquewhite;">+39 02 98765432</td>
+              <td style="background-color: antiquewhite;">sofia.l@example.com</td>
+              <td>Single</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Lisa</td>
+              <td>Martin</td>
+              <td>456-78-9012</td>
+              <td style="background-color: antiquewhite;">+31 20 98765431</td>
+              <td style="background-color: antiquewhite;">lisa.m@example.com</td>
+              <td style="background-color: antiquewhite;">Single</td>
+            </tr>
+          </table>
+        </div>
+
+
+        <p>Queries generated to update data in the <span class="table-name">credits_forms</span> table:</p>
+
+        <div>
+          <pre><code>
+            UPDATE <span class="table-name">credits_forms</span>
+              SET "phone_number" = <span class="tag-value">'+39 02 51821810'</span>, "email" = <span class="tag-value">'sofia.newmail@example.com'</span>, "is_married" = <span class="tag-value">'Single'</span>
+              WHERE "tax_number" =<span class="tag-value">'545-56-7190'</span>;
+            
+            UPDATE <span class="table-name">credits_forms</span>
+              SET "phone_number" = <span class="tag-value">'+31 20 83115136'</span>, "email" = <span class="tag-value">'lisa.newmail@example.com'</span>, "is_married" = <span class="tag-value">'Married'</span>
+              WHERE "tax_number" = <span class="tag-value">'456-78-9012'</span>;
+          
+            UPDATE <span class="table-name">credits_forms</span>
+              SET "phone_number" = <span class="tag-value">'+44 20 12345678'</span>, "email" = <span class="tag-value">'john.smith.newmail@example.com'</span>
+              WHERE "tax_number" = <span class="tag-value">'987-65-4321'</span>;  
+          </code></pre>
+          
+          </div>      
+  
+  
+
+      </article>
+      <hr>
+
+    </main>
+
+
+    <include src="/components/footer.html"></include>
+</body>
+
+</html>
