@@ -680,6 +680,135 @@
               <span class="code-token">"department_address"</span> = EXCLUDED.<span class="code-token">"department_address"</span>;
               </code></pre>
   
+        <p>Structure of project directories and files:</p>
+        <pre>
+          <code>
+            basic-sample
+            ├── ignores
+            │   └── sample.txt
+            ├── rules
+            │   ├── complex-extract-rules.red
+            │   │       sample: []
+            │   ├── db-constraints-rules.red
+            │   │       sample: [
+            │   │           customers: [company_name] ; The uniqueness constraint must be set for column: company_name
+            │   │           departments: [company_name department_name] ; For columns company_name department_name must be set composite key uniqueness restriction 
+            │   │       ]
+            │   ├── grow-rules.red
+            │   │       sample: [
+            │   │           customer: ["customer"] ; key - name in intermediate representation, value - variants (one or more) of key writing in XML
+            │   │           department: ["department"] ; key - name in intermediate representation, value - variants (one or more) of key writing in XML
+            │   │       ]
+            │   ├── injection-rules.red
+            │   │       sample: [
+            │   │           inject-tag-to-every-children: []
+            │   │           enumerate-nodes: [department] ; if need to add sequential numbers to nodes. Always fixed name: item_number
+            │   │           injection-tag-and-recipients: [
+            │   │               company_name: [department] ; company_name will be passed to the department node. One or more lower-level nodes can be specified
+            │   │           ]
+            │   │       ]
+            │   ├── tags-casting-rules.red
+            │   │       sample: [
+            │   │           integer-list: [[to-integer to-float] [founded_year]] ; founded_year will be casted to integer
+            │   │           float-list: [[to-float] []]
+            │   │           bool-list: [[reduce to-word] [usa_resident]] ; usa_resident will be casted to logical (true/false)
+            │   │       ]
+            │   └── tags-matching-rules.red
+            │           #[
+            │               sample: #[
+            │                   company_name: [
+            │                       "customers customer name"
+            │                   ]
+            │                   key_person: [
+            │                       "customers customer keyPerson"
+            │                   ]
+            │                   usa_resident: [
+            │                       "customers customer UsaResident"
+            │                   ]
+            │                   founded_year: [
+            │                       "customers customer foundedYear"
+            │                   ]
+            │                   department_name: [
+            │                       "customers customer department name"
+            │                   ]
+            │                   department_address: [
+            │                       "customers customer department address"
+            │                   ]
+            │               ]
+            │           ]
+            ├── templates
+            │   └── data-templates.red
+            │           #[
+            │               sample: #[ ; section name
+            │                   sample: #[ ; subsection name 
+            │                       customers: [
+            │                           customer: [
+            │                               company_name: none
+            │                               key_person: none
+            │                               usa_resident: none
+            │                               founded_year: none
+            │                               departments: [
+            │                                   department: [
+            │                                       department_name: none
+            │                                       department_address: none
+            │                                   ]
+            │                               ]
+            │                           ]
+            │                       ]
+            │                   ]
+            │               ]
+            │           ]
+            ├── config.txt
+            │       ; allowed combinations: true false "..." none
+            │
+            │       job-number: 1 ; default number from job.txt
+            │       root-xml-folder: "D:/data-samples" ; in case the database stores relative paths without root directory
+            │       xml-filling-stat: false ; Record occupancy statistics to the database. table: filling_percent_stat should exists
+            │       ignore-namespaces: true ; Ignore namespaces in XML
+            │       ignore-tag-attributes: true ; 
+            │       use-same-morphology-for-same-file-name-pattern: false
+            │       skip-schema-version-tag: true
+            │       use-same-morphology-for-all-files-in-folder: false
+            │       delete-data-before-insert: false
+            │       connect-to-db-at-project-opening: false ; Only when working with the database
+            │       source-database: "SQLite" ; available values: PostgreSQL/SQLite
+            │       target-database: "SQLite" ; available values: PostgreSQL/SQLite/NoSQL
+            │       
+            |       ; it is possible to set up notification of unknown tags when persing
+            │       bot-chatID: "" ; 
+            │       bot-token: ""
+            │       telegram-notifications: false
+            │
+            │       db-driver: ""
+            │       db-server: "127.0.0.1"
+            │       db-port: "5432"
+            │       db-name: "test"
+            │       db-user: "postgres"
+            │       db-pass: ""
+            │
+            │       sqlite-driver-name: "SQLite3 ODBC Driver" ; check driver name. May vary
+            │       sqlite-db-path: ""
+            │
+            │       nosql-url: "http://localhost:8529/_db/testdb/_api/document/" ; sample for ArangoDB
+            │       append-subsection-name-to-nosql-url: true ; Some databases (such as ArangoDB) require you to pass the collection name in the URL
+            │       nosql-login: "root"
+            │       nosql-pass: "12345"
+            └── job.txt
+                    job-number: 1 ; number of where-condition. is required to work with the database. In case of multiprocessing, it is overridden via command line arguments for each application instance.
+                    xml-table-name: "xml_files" ; table name where XML references are stored
+                    limit: 1000 ; Number of files requested at a time for processing
+                    order_by: "id ASC" ; sort order 
+                    select-fields: [
+                        id xml_path ; mandatory fields must be in each table with xml_files
+                    ]
+                    where-condition: [
+                        [] ; SELECT ... WHERE. Recommended to customize from GUI
+                    ]            
+          </code>
+        </pre>
+
+
+  
         </div>        
 
 
