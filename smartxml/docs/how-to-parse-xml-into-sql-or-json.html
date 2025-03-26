@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+    <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <meta charset="utf-8">
+    <meta name="description" content="How to convert XML to SQL and JSON">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script src="/js/pre-code-fix.js" defer></script>
+    <script src="//static.redata.dev/js/media-queries.js" defer></script>
+    <script src="//static.redata.dev/js/include.js" defer></script>     
+    <script src="//static.redata.dev/js/ui.js" defer></script>   
+    <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    
+    <title>How to Convert XML to SQL and JSON</title>
+</head>
+
+<body>
+    <main>
+
+      <header>
+        <include src="components/header.html"></include>
+        <div id="breadcrumb"></div>
+      </header>
+
+      <article>
+        <h2>How to Convert XML to SQL and JSON</h2>
+
+        <p>Make sure you have correctly configured the <a href="/database-connection-configuration.html">database connection</a>.</p>
+        
+        <p>On the <span class="ui-item">Local File</span> tab, click on <span class="ui-item">📄</span></p>
+        <p>Enter the name of the new project and click the <span class="ui-item">➕</span> button</p>
+        
+        <p>Now, in the dropdown menu under <span class="ui-item">Project</span>, select the created project and click the <span class="ui-item">📂</span> button</p>
+        <div class="img-container">
+          <img src="images/creation_new_project.png" />
+        </div>
+        
+        <p>Data for the <span class="code-inline-snippet">basic-sample</span> project is located in the directory <span class="code-inline-snippet">data-samples/basic-sample/example_1.xml</span></p>
+        <p>Structure of <span class="code-inline-snippet">example_1.xml</span>:</p>
+        
+
+        <div>
+                  <pre><code>
+                    <span class="tag-name">&lt;?xml</span> <span class="tag-name">version="1.0"?></span>
+                    <span class="tag-name">&lt;customers&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Tesla</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Elon Musk</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">2003</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                            <span class="tag-name">&lt;department&gt;</span>
+                                <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Tesla Engineering</span><span class="tag-name">&lt;/name&gt;</span>
+                                <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1501 Page Mill Road Palo Alto, Framingham, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                            <span class="tag-name">&lt;/department&gt;</span>
+                            <span class="tag-name">&lt;department&gt;</span>
+                                <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Gigafactory Texas</span><span class="tag-name">&lt;/name&gt;</span>
+                                <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1 Tesla Road Austin, TX 78725, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                            <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Boston Dynamics</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Robert Playter</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1992</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                            <span class="tag-name">&lt;department&gt;</span>
+                                <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Headquarters</span><span class="tag-name">&lt;/name&gt;</span>
+                                <span class="tag-name">&lt;address&gt;</span><span class="tag-value">200 Smith St, Waltham, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                            <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Bank of Korea</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Kim Seong Tae</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">No</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1950</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                            <span class="tag-name">&lt;department&gt;</span>
+                                <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Main Department</span><span class="tag-name">&lt;/name&gt;</span>
+                                <span class="tag-name">&lt;address&gt;</span><span class="tag-value">Sejong-daero, Jung-gu, Seoul, South Korea</span><span class="tag-name">&lt;/address&gt;</span>
+                            <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                    <span class="tag-name">&lt;/customers&gt;</span>
+                  </code></pre>
+        </div>
+
+
+        <p>After opening the project, the bottom row of buttons will be activated, allowing you to add and delete sections and subsections.</p>
+
+
+        <div class="content" style="display: flex; margin: 0 auto; ">
+          <div style="width: 100%;">
+            <div class="img-container">
+              <img src="images/empty-project-left-menu.png" />
+            </div>
+          </div>
+          <div>
+            <p>To start, you will need to create a section and a subsection.</p>
+          
+            <p>Each individual section represents a logically isolated type of document.</p>
+          
+            <p>Each subsection represents a subtype of the document. This is usually required for cases where there is some variability in the structure within a separate logical type of documents.</p>
+          
+            <p>The number of types (sections) and subtypes (subsections) is not limited.</p>
+          
+            <p>For each type (section), you can specify separate parsing rules. <strong>For all subtypes (subsections) within a type (section), parsing rules are common</strong>.</p>
+          
+            <p>Within the project, it is necessary to create at least one type and one subtype.</p>
+          </div>
+          
+          <div style="width: 100%;">
+            <div class="img-container">
+              <img src="images/opened-with-data-left-menu.png" />
+            </div>
+          </div>
+        </div>
+
+        <p>After that, you need to place a punch on the selected subsection and describe the desired structure of the extracted data in the format of an intermediate representation.</p>
+
+        <p>In XML (eXtensible Markup Language), all elements are nodes.</p>
+
+        
+          <p>All nodes that need to be represented as tables (or as JSON arrays) must have a parent that will be used as the table name (or array name in the case of JSON). Example:</p>
+
+          <pre><code>
+          <span class="table-name">parent_name</span>: [ ; container that will be used as name of table or name of json array
+            <span class="tag-name">some_node</span>: [ ; node corresponding to a real node in XML 
+            ]
+          ]
+          </code></pre>
+
+
+
+          <p>Each value should be represented in the format: <code><span class="tag-name">node_name: </span> <span class="tag-value">none</span> </code></p> 
+
+
+        <p>If your data structure is such that the root starts not with blocks, but with values, then the name of the table for the root will be the name of the subsection.</p>        
+        
+        <p>If some data is not needed to be extracted, simply do not describe it in the specified structure. In the example, we extract all the data. As a result, we should have the following document description:</p>
+        
+        <div class="img-container">
+          <img src="images/screen-04_1.png" />
+        </div>
+        
+
+        <p>The names in the intermediate representation <strong>do not necessarily</strong> have to match the names in the original XML file. However, these <strong>names must exactly match the structure of tables in the relational database</strong> into which the data is unloaded.</p>
+
+        <p><strong>All further manipulations will be tied to the names of the intermediate representation</strong>, so it is necessary for the names not to be repeated. It is good practice to give names that allow understanding the parent of a particular tag. Not
+          <code><span class="tag-name">name</span>: <span class="tag-value">none</span></code>, but <code><span class="tag-name">department_name</span>: <span class="tag-value">none</span></code>
+        </p>
+        
+
+        <p>Text representation of the example data:</p>
+
+        <div>
+            <pre><code>
+        <span class="table-name">customers</span>: [
+            <span class="tag-name">customer:</span> [
+                <span class="tag-name">company_name:</span> <span class="tag-value">none</span>
+                <span class="tag-name">key_person:</span> <span class="tag-value">none</span>
+                <span class="tag-name">usa_resident:</span> <span class="tag-value">none</span>
+                <span class="tag-name">founded_year:</span> <span class="tag-value">none</span>
+                <span class="table-name">departments</span>: [
+                    <span class="tag-name">department:</span> [
+                        <span class="tag-name">department_name:</span> <span class="tag-value">none</span>
+                        <span class="tag-name">department_address:</span> <span class="tag-value">none</span>
+                    ]
+                ]
+            ]
+        ]
+            </code></pre>
+         
+        </div>
+
+
+        <p>It is important to remember that this description will be translated into tables exactly as described. The names of the parent nodes will be used as table names.</p>
+
+        <p>Keep in mind that SmartXML allows you to build missing parent tags if they are implied but missing in the original XML.</p>
+        <p>You may have noticed that in the original XML, <code><span class="tag-name">customer</span></code> has a parent node <code><span class="tag-name">customers</span></code>, but <code><span class="tag-name">department</span></code> doesn't have a parent <code><span class="tag-name">departments</span></code>, although it is clearly implied.</p>
+        <p>Therefore, let's describe the intermediate representation as if all sections were present.</p>
+        
+        <p>For the given example, the correct table structure (SQLite notation) would be: <span class="table-name">customers</span> and <span class="table-name">departments</span></p>
+        
+
+        <div>
+
+                <pre><code>
+                  <span class="code-token">CREATE TABLE</span> <span class="table-name">customers</span> (
+                      <span class="tag-name">id</span> <span class="code-token">INTEGER</span> <span class="code-token">PRIMARY KEY AUTOINCREMENT</span>,
+                      <span class="tag-name">company_name</span> <span class="code-token">TEXT</span>,
+                      <span class="tag-name">key_person</span> <span class="code-token">TEXT</span>
+                      <span class="tag-name">usa_resident</span> <span class="code-token">TEXT</span>,
+                      <span class="tag-name">founded_year</span> <span class="code-token">INTEGER</span>
+                  );
+                </code></pre>
+       
+
+
+
+              <pre><code>
+        <span class="code-token">CREATE</span> <span class="code-token">TABLE</span> <span class="table-name">departments</span> (
+            <span class="tag-name">id</span> <span class="code-token">Integer</span> <span class="code-token">PRIMARY</span> <span class="code-token">KEY AUTOINCREMENT</span>,
+            <span class="tag-name">department_name</span> <span class="code-token">Text</span>,
+            <span class="tag-name">department_address</span> <span class="code-token">Text</span>
+        );
+            </code></pre>
+        
+
+
+        </div>
+
+        <p>Next, it is necessary to establish a correspondence between elements of the XML tree (paths) and names in the intermediate representation.</p>
+
+        <p>To do this, you need to click on the <span class="ui-item">Morphology</span> button. After that, you have to match the elements from the intermediate representation with the chains of XML tags:</p>
+        
+        <div class="img-container">
+          <img src="images/screen-04.png" />
+        </div>
+
+        <p>Add each chain to the rules with the <span class="ui-item">Add to Rules</span> button.
+          Repeat the operation for all tags.</p>
+       
+       <p>Editing the tag chain is possible on the <span class="ui-item">Rules</span> ⮞ <span class="ui-item">Tags Matching</span> tab</p>
+       <p>Editing the list of ignored tag chains is possible on the <span class="ui-item">Rules</span> ⮞ <span class="ui-item">Ignored Tags</span> tab</p>
+       
+       <p>After that, switch to the <span class="ui-item">Rules</span> ⮞ <span class="ui-item">Grow Rules</span> tab and specify the names of nodes in the SmartXML schema. When encountering these nodes, SmartXML will need to build the intermediate representation.</p>
+       
+       <p>In the left column, specify the name of the node from the intermediate representation. In the right column, specify how the node is named in XML.</p>
+       
+
+        <div class="img-container">
+          <img src="images/screen-01.png" />
+        </div>
+
+        <p>For each node, you can add an unlimited number of writing options. So, if in the original XML we had the following naming variants:</p>
+
+          <div>
+            <pre><code>
+        <span class="tag-name">&lt;department&gt;</span>
+          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Tesla Engineering</span><span class="tag-name">&lt;/name&gt;</span>
+          <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1501 Page Mill Road Palo Alto, Framingham, USA</span><span class="tag-name">&lt;/address&gt;</span>
+        <span class="tag-name">&lt;/department&gt;</span>
+            </code></pre>
+          </div>
+
+
+        <div>
+            <pre><code>
+        <span class="tag-name">&lt;currentDepartment&gt;</span>
+          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Tesla Engineering</span><span class="tag-name">&lt;/name&gt;</span>
+          <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1501 Page Mill Road Palo Alto, Framingham, USA</span><span class="tag-name">&lt;/address&gt;</span>
+        <span class="tag-name">&lt;/currentDepartment&gt;</span>
+            </code></pre>
+
+        </div>
+
+        <div>
+            <pre><code>
+        <span class="tag-name">&lt;dep&gt;</span>
+          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Tesla Engineering</span><span class="tag-name">&lt;/name&gt;</span>
+          <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1501 Page Mill Road Palo Alto, Framingham, USA</span><span class="tag-name">&lt;/address&gt;</span>
+        <span class="tag-name">&lt;/dep&gt;</span>
+            </code></pre>
+        </div>
+
+        <p>The rule would look like this:</p>
+
+
+        <div class="img-container">
+          <img src="images/screen-01_1.png" />
+        </div>
+
+        
+        <p>Now, after clicking the <span class="ui-item">Parse</span> button on the <span class="ui-item">Block Representation</span> tab, we will get the following representation:</p>
+
+
+         <div>
+         <pre><code>
+        <span class="tag-name">[</span><span class="table-name">customers</span>: <span class="tag-name">[customer: [</span> 
+            <span class="tag-name">company_name:</span> <span class="tag-value">"Tesla"</span> 
+            <span class="tag-name">key_person:</span> <span class="tag-value">"Elon Musk"</span> 
+            <span class="tag-name">usa_resident:</span> <span class="tag-value">"Yes"</span> 
+            <span class="tag-name">founded_year:</span> <span class="tag-value">"2003"</span> 
+            <span class="table-name">departments</span>: <span class="tag-name">[department: [</span> 
+                <span class="tag-name">department_name:</span> <span class="tag-value">"Tesla Engineering"</span> 
+                <span class="tag-name">department_address:</span> <span class="tag-value">"1501 Page Mill Road Palo Alto, Framingham, USA"</span>
+            <span class="tag-name">]</span> <span class="tag-name">department: [</span> 
+                <span class="tag-name">department_name:</span> <span class="tag-value">"Gigafactory Texas"</span> 
+                <span class="tag-name">department_address:</span> <span class="tag-value">"1 Tesla Road Austin, TX 78725, USA"</span>
+            <span class="tag-name">]]</span>
+        <span class="tag-name">]</span> <span class="tag-name">customer: [</span> 
+            <span class="tag-name">company_name:</span> <span class="tag-value">"Boston Dynamics"</span> 
+            <span class="tag-name">key_person:</span> <span class="tag-value">"Robert Playter"</span> 
+            <span class="tag-name">usa_resident:</span> <span class="tag-value">"Yes"</span> 
+            <span class="tag-name">founded_year:</span> <span class="tag-value">"1992"</span> 
+            <span class="table-name">departments</span>: <span class="tag-name">[department: [</span> 
+                <span class="tag-name">department_name:</span> <span class="tag-value">"Headquarters"</span> 
+                <span class="tag-name">department_address:</span> <span class="tag-value">"200 Smith St, Waltham, USA"</span>
+            <span class="tag-name">]]</span>
+        <span class="tag-name">]</span> <span class="tag-name">customer: [</span> 
+            <span class="tag-name">company_name:</span> <span class="tag-value">"Bank of Korea"</span> 
+            <span class="tag-name">key_person:</span> <span class="tag-value">"Kim Seong Tae"</span> 
+            <span class="tag-name">usa_resident:</span> <span class="tag-value">"No"</span> 
+            <span class="tag-name">founded_year:</span> <span class="tag-value">"1950"</span> 
+            <span class="table-name">departments</span>: <span class="tag-name">[department: [</span> 
+                <span class="tag-name">department_name:</span> <span class="tag-value">"Main Department"</span> 
+                <span class="tag-name">department_address:</span> <span class="tag-value">"67, Sejong-daero, Jung-gu, Seoul, South Korea"</span>
+            <span class="tag-name">]]</span>
+        <span class="tag-name">]]]</span>
+            </code></pre>
+     
+        </div>
+
+
+        <p>As you can see, SmartXML added nodes.</p>
+
+        <p><i>Note</i>: if you need to add sequential numbers to nodes that are missing in the original data, specify the list of these nodes separated by a space on the <span
+          class="ui-item">Inject Rules</span>⮞<span class="ui-item">Enumerate nodes</span></p>
+          <p>The tag name with the number is always fixed: <code>item_number</code></p>
+          <p>So, in the provided example, setting this field in <code><span class="code-token">department</span></code> will result in the generation of the following intermediate representation:</p>
+        
+          <details>
+            <summary>Enumerate nodes example</summary>
+            <div>
+              <pre><code>
+             <span class="tag-name">[</span><span class="table-name">customers</span>: <span class="tag-name">[customer: [</span> 
+                 <span class="tag-name">company_name:</span> <span class="tag-value">"Tesla"</span> 
+                 <span class="tag-name">key_person:</span> <span class="tag-value">"Elon Musk"</span> 
+                 <span class="tag-name">usa_resident:</span> <span class="tag-value">"Yes"</span> 
+                 <span class="tag-name">founded_year:</span> <span class="tag-value">"2003"</span> 
+                 <span class="table-name">departments</span>: <span class="tag-name">[department: [</span> 
+                     <span class="tag-name">item_number:</span> <span class="tag-value">1</span> 
+                     <span class="tag-name">department_name:</span> <span class="tag-value">"Tesla Engineering"</span> 
+                     <span class="tag-name">department_address:</span> <span class="tag-value">"1501 Page Mill Road Palo Alto, Framingham, USA"</span>
+                 <span class="tag-name">]</span> <span class="tag-name">department: [</span> 
+                     <span class="tag-name">item_number:</span> <span class="tag-value">2</span> 
+                     <span class="tag-name">department_name:</span> <span class="tag-value">"Gigafactory Texas"</span> 
+                     <span class="tag-name">department_address:</span> <span class="tag-value">"1 Tesla Road Austin, TX 78725, USA"</span>
+                 <span class="tag-name">]]</span>
+             <span class="tag-name">]</span> <span class="tag-name">customer: [</span> 
+                 <span class="tag-name">company_name:</span> <span class="tag-value">"Boston Dynamics"</span> 
+                 <span class="tag-name">key_person:</span> <span class="tag-value">"Robert Playter"</span> 
+                 <span class="tag-name">usa_resident:</span> <span class="tag-value">"Yes"</span> 
+                 <span class="tag-name">founded_year:</span> <span class="tag-value">"1992"</span> 
+                 <span class="table-name">departments</span>: <span class="tag-name">[department: [</span> 
+                     <span class="tag-name">item_number:</span> <span class="tag-value">1</span> 
+                     <span class="tag-name">department_name:</span> <span class="tag-value">"Headquarters"</span> 
+                     <span class="tag-name">department_address:</span> <span class="tag-value">"200 Smith St, Waltham, USA"</span>
+                 <span class="tag-name">]]</span>
+             <span class="tag-name">]</span> <span class="tag-name">customer: [</span> 
+                 <span class="tag-name">company_name:</span> <span class="tag-value">"Bank of Korea"</span> 
+                 <span class="tag-name">key_person:</span> <span class="tag-value">"Kim Seong Tae"</span> 
+                 <span class="tag-name">usa_resident:</span> <span class="tag-value">"No"</span> 
+                 <span class="tag-name">founded_year:</span> <span class="tag-value">"1950"</span> 
+                 <span class="table-name">departments</span>: <span class="tag-name">[department: [</span> 
+                     <span class="tag-name">item_number:</span> <span class="tag-value">1</span> 
+                     <span class="tag-name">department_name:</span> <span class="tag-value">"Main Department"</span> 
+                     <span class="tag-name">department_address:</span> <span class="tag-value">"67, Sejong-daero, Jung-gu, Seoul, South Korea"</span>
+                 <span class="tag-name">]]</span>
+             <span class="tag-name">]]]</span>
+                 </code></pre>
+              
+             </div>
+
+         </details>          
+
+
+    
+         <p>Now the obtained representation can be transformed into both JSON and SQL.</p>
+
+         <p>To convert to JSON in the interface, click the <span class="ui-item">to JSON</span> button, and on the
+           <span class="ui-item">JSON Representation</span> tab, the following result will be presented:
+         </p>
+         
+        <div>
+            <pre><code>
+        <span class="tag-name">{</span>
+          "<span class="table-name">customers</span>": <span class="tag-name">[</span>
+        <span class="tag-name">      {</span>
+        <span class="tag-name">         "company_name":</span> <span class="tag-value">"Tesla"</span>,
+        <span class="tag-name">         "key_person":</span> <span class="tag-value">"Elon Musk"</span>,
+        <span class="tag-name">         "usa_resident":</span> <span class="tag-value">"Yes"</span>,
+        <span class="tag-name">         "founded_year":</span> <span class="tag-value">"2003"</span>,
+                "<span class="table-name">departments</span>": <span class="tag-name">[</span>
+        <span class="tag-name">            {</span>
+        <span class="tag-name">               "department_name":</span> <span class="tag-value">"Tesla Engineering"</span>,
+        <span class="tag-name">               "department_address":</span> <span class="tag-value">"1501 Page Mill Road Palo Alto, Framingham, USA"</span>
+        <span class="tag-name">            }</span>,
+        <span class="tag-name">            {</span>
+        <span class="tag-name">               "department_name":</span> <span class="tag-value">"Gigafactory Texas"</span>,
+        <span class="tag-name">               "department_address":</span> <span class="tag-value">"1 Tesla Road Austin, TX 78725, USA"</span>
+        <span class="tag-name">            }</span>
+        <span class="tag-name">         ]</span>
+        <span class="tag-name">      }</span>,
+        <span class="tag-name">      {</span>
+        <span class="tag-name">         "company_name":</span> <span class="tag-value">"Boston Dynamics"</span>,
+        <span class="tag-name">         "key_person":</span> <span class="tag-value">"Robert Playter"</span>,
+        <span class="tag-name">         "usa_resident":</span> <span class="tag-value">"Yes"</span>,
+        <span class="tag-name">         "founded_year":</span> <span class="tag-value">"1992"</span>,
+                "<span class="table-name">departments</span>": <span class="tag-name">[</span>
+        <span class="tag-name">            {</span>
+        <span class="tag-name">               "department_name":</span> <span class="tag-value">"Headquarters"</span>,
+        <span class="tag-name">               "department_address":</span> <span class="tag-value">"200 Smith St, Waltham, USA"</span>
+        <span class="tag-name">            }</span>
+        <span class="tag-name">         ]</span>
+        <span class="tag-name">      }</span>,
+        <span class="tag-name">      {</span>
+        <span class="tag-name">         "company_name":</span> <span class="tag-value">"Bank of Korea"</span>,
+        <span class="tag-name">         "key_person":</span> <span class="tag-value">"Kim Seong Tae"</span>,
+        <span class="tag-name">         "usa_resident":</span> <span class="tag-value">"No"</span>,
+        <span class="tag-name">         "founded_year":</span> <span class="tag-value">"1950"</span>,
+                "<span class="table-name">departments</span>": <span class="tag-name">[</span>
+        <span class="tag-name">            {</span>
+        <span class="tag-name">               "department_name":</span> <span class="tag-value">"Main Department"</span>,
+        <span class="tag-name">               "department_address":</span> <span class="tag-value">"67, Sejong-daero, Jung-gu, Seoul, South Korea"</span>
+        <span class="tag-name">            }</span>
+        <span class="tag-name">         ]</span>
+        <span class="tag-name">      }</span>
+        <span class="tag-name">   ]</span>
+        <span class="tag-name">}</span>
+            </code></pre>
+          </div>
+
+        <p>Pay attention that nodes containing arrays are correctly generated. This happened thanks to the configuration of <span class="ui-item">Grow Rules</span>. Otherwise, in the following structure:</p>
+        <div>
+
+            <pre><code>
+              <span class="tag-name">&lt;departments&gt;</span>
+              <span class="tag-name">&nbsp;&nbsp;&lt;department&gt;</span><span class="tag-name">&lt;/department&gt;</span>		  
+              <span class="tag-name">&lt;/departments&gt;</span>
+            </code></pre>
+   
+        </div>
+        <p>SmartXML wouldn't be able to correctly recognize whether <code><span class="tag-name">departments</span></code> is an object <code>{}</code> or if <code><span class="tag-name">departments</span></code> is an array of objects: <code>[{},{}]</code></p>
+        
+        <p>To convert to SQL, simply press the <span class="ui-item">to SQL</span> button, and the intermediate representation will be transformed into a SQL statement for insertion into the database:</p>
+
+
+          <div>
+            <pre><code>
+        <span class="code-token">INSERT INTO</span> <span class="table-name">customers</span> (<span class="green">"company_name"</span>, <span class="green">"key_person"</span>, <span class="green">"usa_resident"</span>, <span class="green">"founded_year"</span>)
+        <span class="code-token">VALUES</span> (<span class="tag-value">'Tesla'</span>, <span class="tag-value">'Elon Musk'</span>, <span class="tag-value">'tag-value'</span>, <span class="tag-value">'2003'</span>),
+        (<span class="tag-value">'Boston Dynamics'</span>, <span class="tag-value">'Robert Playter'</span>, <span class="tag-value">'Yes'</span>, <span class="tag-value">'1992'</span>),
+        (<span class="tag-value">'Bank of Korea'</span>, <span class="tag-value">'Kim Seong Tae'</span>, <span class="tag-value">'No'</span>, <span class="tag-value">'1950'</span>);
+        
+        <span class="code-token">INSERT INTO</span> <span class="table-name">departments</span> (<span class="green">"department_name"</span>, <span class="green">"department_address"</span>)
+        <span class="code-token">VALUES</span> (<span class="tag-value">'Tesla Engineering'</span>, <span class="tag-value">'1501 Page Mill Road Palo Alto, Framingham, USA'</span>),
+        (<span class="tag-value">'Gigafactory Texas'</span>, <span class="tag-value">'1 Tesla Road Austin, TX 78725, USA'</span>),
+        (<span class="tag-value">'Headquarters'</span>, <span class="tag-value">'200 Smith St, Waltham, USA'</span>),
+        (<span class="tag-value">'Main Department'</span>, <span class="tag-value">'67, Sejong-daero, Jung-gu, Seoul, South Korea'</span>);
+            </code></pre>
+        </div>
+
+        <p>SQL expressions are generated with consideration for multiple <span class="code-token">VALUES</span> at once.</p>
+        <p>However, if we execute the specified insert statement multiple times, we will get unwanted duplicate records in the tables.</p>
+        
+        <p>To prevent the addition of duplicates, you can use a special condition to prevent the insertion of repeating values: <span class="code-token">ON CONFLICT DO UPDATE</span></p>
+        
+        <p>To do this, you need to:</p>
+        <p>1. Set a uniqueness constraint on the required columns in the database table</p>
+        
+        <p>2. Specify the names of these columns in the SmartXML settings</p>
+        
+        <p>After adding a constraint to prevent the insertion of identical <span class="code-inline-snippet">company_name</span> values, the <span class="table-name">customers</span> table will look like this:</p>
+        
+          <div>
+               <pre><code>
+           <span class="tag-name">CREATE TABLE</span> <span class="table-name">customers</span> (
+               <span class="tag-name">id</span> <span class="tag-name">Integer</span> <span class="tag-name">PRIMARY KEY AUTOINCREMENT</span>,
+               <span class="tag-name">company_name</span> <span class="tag-name">Text</span>,
+               <span class="tag-name">key_person</span> <span class="tag-name">Text</span>,
+               <span class="tag-name">usa_resident</span> <span class="tag-name">Text</span>,
+               <span class="tag-name">founded_year</span> <span class="tag-name">Integer</span>,
+               <span class="tag-name">CONSTRAINT "uniq_company_name" UNIQUE ("company_name")</span>
+           );
+             </code></pre>
+           </div>
+
+           <p>Now you need to specify these constraints in the SmartXML settings. To do this, go to the <span class="ui-item">Rules</span> ⮞ <span
+            class="ui-item">Database Constraints</span> tab and specify the table name and the name of one or more columns for which
+          uniqueness constraints are set.</p>
+        
+        <p>In the left column, specify the table name. In the right column, specify the names of the columns for which uniqueness constraints are set.</p>
+        
+        <div class="img-container">
+          <img src="images/screen-02_2.png" />
+        </div>
+
+        <p>Now, after clicking the <span class="ui-item">to SQL</span> button, an expression for the <span class="table-name">customers</span> table will be generated, taking into account the <span class="code-token">ON CONFLICT</span>:</p>
+
+
+        <div>
+            <pre><code>
+        <span class="code-token">INSERT INTO </span><span class="table-name">customers</span> ("company_name", "key_person", "usa_resident", "founded_year")
+        <span class="code-token">VALUES</span> 
+            (<span class="tag-value">'Tesla'</span>, <span class="tag-value">'Elon Musk'</span>, <span class="tag-value">'Yes'</span>, <span class="tag-value">'2003'</span>),
+            (<span class="tag-value">'Boston Dynamics'</span>, <span class="tag-value">'Robert Playter'</span>, <span class="tag-value">'Yes'</span>, <span class="tag-value">'1992'</span>),
+            (<span class="tag-value">'Bank of Korea'</span>, <span class="tag-value">'Kim Seong Tae'</span>, <span class="tag-value">'No'</span>, <span class="tag-value">'1950'</span>)
+        <span class="code-token">ON CONFLICT</span> ("company_name")
+        <span class="code-token">DO UPDATE SET</span> 
+        <span class="code-token">    "company_name" = EXCLUDED."company_name",</span> 
+        <span class="code-token">    "key_person" = EXCLUDED."key_person",</span> 
+        <span class="code-token">    "usa_resident" = EXCLUDED."usa_resident",</span> 
+        <span class="code-token">    "founded_year" = EXCLUDED."founded_year";</span>
+        
+        <span class="code-token">INSERT INTO</span> <span class="table-name">departments</span> ("department_name", "department_address")
+        <span class="code-token">VALUES</span> 
+        <span class="code-token">    (<span class="tag-value">'Tesla Engineering'</span>, <span class="tag-value">'1501 Page Mill Road Palo Alto, Framingham, USA'</span>),</span> 
+        <span class="code-token">    (<span class="tag-value">'Gigafactory Texas'</span>, <span class="tag-value">'1 Tesla Road Austin, TX 78725, USA'</span>),</span> 
+        <span class="code-token">    (<span class="tag-value">'Headquarters'</span>, <span class="tag-value">'200 Smith St, Waltham, USA'</span>),</span> 
+        <span class="code-token">    (<span class="tag-value">'Main Department'</span>, <span class="tag-value">'67, Sejong-daero, Jung-gu, Seoul, South Korea'</span>);</span> 
+            </code></pre>
+        </div>
+
+
+        <p>However, no constraints are currently set for the <span class="table-name">departments</span> table.</p>
+
+        <p>Let's assume we want to prevent the insertion of duplicate records with the same combination of <code><span class="tag-name">company_name</span></code> and <code><span
+                  class="tag-name">department_name</span></code> into it. However, in the original XML, the <code><span
+                  class="tag-name">company_name</span></code> is located one level above and relates to the <span class="table-name">customers</span> node.</p>
+        
+        <p>To achieve this, let's set up the forwarding of the parent's name to the child. Go to <span
+                class="ui-item">Rules</span> ⮞ <span class="ui-item">Injection Rules</span></p>
+        
+        <p>In case a field needs to be passed to all children, you can use the <span
+                class="ui-item">Inject tag to every children</span> option and specify the names of the tags that need to be passed down one level, separated by spaces.</p>
+        
+        <p>However, you can also specify specific names of child nodes into which the specified field should be passed.</p>
+        
+        <p>In this case, the <span class="code-inline-snippet">company_name</span> needs to be passed to the <span
+                class="code-inline-snippet">department</span> node. (Important: specify the name of the final node, so it's not <span
+                class="table-name">departments</span>, but <span class="code-inline-snippet">department</span>)</p>
+        
+        <div class="img-container">
+          <img src="images/screen-03.png" />
+        </div>
+
+        <p>Now, the intermediate representation will look like this:</p>
+
+          <div>
+            <pre><code>
+        <span class="code-token">[</span><span class="table-name">customers</span>: <span class="tag-name">[customer: [</span> 
+            <span class="tag-name">company_name:</span> <span class="tag-value">"Tesla"</span>
+            <span class="tag-name">key_person:</span> <span class="tag-value">"Elon Musk"</span>
+            <span class="tag-name">usa_resident:</span> <span class="tag-value">"Yes"</span>
+            <span class="tag-name">founded_year:</span> <span class="tag-value">"2003"</span> 
+            <span class="table-name">departments</span>: <span class="tag-name">[department: [</span> 
+                <span class="tag-name">department_name:</span> <span class="tag-value">"Tesla Engineering"</span> 
+                <span class="tag-name">department_address:</span> <span class="tag-value">"1501 Page Mill Road Palo Alto, Framingham, USA"</span>
+            <span class="tag-name">]</span> <span class="tag-name">department: [</span> 
+                <span class="tag-name">department_name:</span> <span class="tag-value">"Gigafactory Texas"</span> 
+                <span class="tag-name">department_address:</span> <span class="tag-value">"1 Tesla Road Austin, TX 78725, USA"</span>
+            <span class="tag-name">]]</span>                      
+        <span class="tag-name">]</span> <span class="tag-name">customer: [</span> 
+            <span class="tag-name">company_name:</span> <span class="tag-value">"Boston Dynamics"</span> 
+            <span class="tag-name">key_person:</span> <span class="tag-value">"Robert Playter"</span>
+            <span class="tag-name">usa_resident:</span> <span class="tag-value">"Yes"</span> 
+            <span class="tag-name">founded_year:</span> <span class="tag-value">"1992"</span> 
+            <span class="table-name">departments</span>: <span class="tag-name">[department:</span> 
+                <span class="tag-name">department_name:</span> <span class="tag-value">"Headquarters"</span> 
+                <span class="tag-name">department_address:</span> <span class="tag-value">"200 Smith St, Waltham, USA"</span>
+            <span class="tag-name">]]</span>    
+        <span class="tag-name">]</span> <span class="tag-name">customer: [</span> 
+            <span class="tag-name">company_name:</span> <span class="tag-value">"Bank of Korea"</span> 
+            <span class="tag-name">key_person:</span> <span class="tag-value">"Kim Seong Tae"</span>
+            <span class="tag-name">usa_resident:</span> <span class="tag-value">"No"</span>
+            <span class="tag-name">founded_year:</span> <span class="tag-value">"1950"</span>
+            <span class="table-name">departments</span>: <span class="tag-name">[department: [</span> 
+                <span class="tag-name">department_name:</span> <span class="tag-value">"Main Department"</span>
+                <span class="tag-name">department_address:</span> <span class="tag-value">"67, Sejong-daero, Jung-gu, Seoul, South Korea"</span>
+          <span class="tag-name">]]</span>                      
+        <span class="tag-name">]]]</span>
+              </code></pre>
+          </div>
+
+
+        <p>As you can see, each node in the intermediate representation <code><span class="tag-name">department</span></code> now has the field: <code><span
+          class="tag-name">company_name</span></code>:</p>
+          <div>
+            <pre><code>
+        <span class="tag-name">department:</span> <span class="tag-name">[</span>
+            <span class="tag-name">company_name:</span> <span class="tag-value">"Bank of Korea"</span> 
+            <span class="tag-name">department_name:</span> <span class="tag-value">"Main Department"</span>
+            <span class="tag-name">department_address:</span> <span class="tag-value">"67, Sejong-daero, Jung-gu, Seoul, South Korea"</span>
+        <span class="tag-name">]</span>
+          </code></pre>
+          </div>
+
+
+        <p>Add the <code><span class="tag-name">company_name</span></code> column to the <span class="table-name">departments</span> table and specify unique constraints for the columns: <code><span class="tag-name">company_name</span></code> and <code><span class="tag-name">department_name</span></code>, resulting in the following table:</p>
+
+         <div>
+            <pre><code>
+        <span class="tag-name">CREATE TABLE</span> <span class="table-name">departments</span> (
+            <span class="tag-name">id</span> <span class="tag-name">Integer</span> <span class="tag-name">PRIMARY KEY AUTOINCREMENT</span>,
+            <span class="tag-name">department_name</span> <span class="tag-name">Text</span>,
+            <span class="tag-name">department_address</span> <span class="tag-name">Text</span>,
+            <span class="tag-name">company_name</span> <span class="tag-name">Text</span>,
+            <span class="tag-name">CONSTRAINT "uniq_company_name" UNIQUE ("company_name", "department_name")</span>
+        );
+          </code></pre>
+          </div>
+     
+
+        <p>In the application settings, set constraints for the tables:</p>
+
+
+        <div class="img-container">
+          <img src="images/screen-02.png" />
+        </div>
+
+        <p>Now, after pressing the <span class="ui-item">to SQL</span> button, the following SQL expression preventing duplicates insertion into both tables will be generated:</p>
+
+          <div>
+            <pre><code>
+        <span class="code-token">INSERT INTO</span> <span class="table-name">customers</span> (<span class="code-token">"company_name"</span>, <span class="code-token">"key_person"</span>, <span class="code-token">"usa_resident"</span>, <span class="code-token">"founded_year"</span>)
+        <span class="code-token">VALUES</span> 
+              (<span class="tag-value">'Tesla'</span>, <span class="tag-value">'Elon Musk'</span>, <span class="tag-value">'Yes'</span>, <span class="tag-value">'2003'</span>),
+              (<span class="tag-value">'Boston Dynamics'</span>, <span class="tag-value">'Robert Playter'</span>, <span class="tag-value">'Yes'</span>, <span class="tag-value">'1992'</span>),
+              (<span class="tag-value">'Bank of Korea'</span>, <span class="tag-value">'Kim Seong Tae'</span>, <span class="tag-value">'No'</span>, <span class="tag-value">'1950'</span>)
+        <span class="code-token">ON CONFLICT</span> (<span class="code-token">"company_name"</span>)
+        <span class="code-token">DO UPDATE SET</span> 
+              <span class="code-token">"company_name"</span> = EXCLUDED.<span class="code-token">"company_name"</span>,
+              <span class="code-token">"key_person"</span> = EXCLUDED.<span class="code-token">"key_person"</span>,
+              <span class="code-token">"usa_resident"</span> = EXCLUDED.<span class="code-token">"usa_resident"</span>,
+              <span class="code-token">"founded_year"</span> = EXCLUDED.<span class="code-token">"founded_year"</span>;
+        
+        <span class="code-token">INSERT INTO</span> <span class="table-name">departments</span> (<span class="code-token">"company_name"</span>, <span class="code-token">"department_name"</span>, <span class="code-token">"department_address"</span>)
+        <span class="code-token">VALUES</span> 
+              (<span class="tag-value">'Tesla</span>, <span class="tag-value">'Tesla Engineering'</span>, <span class="tag-value">'1501 Page Mill Road Palo Alto, Framingham, USA'</span>),
+              (<span class="tag-value">'Tesla</span>, <span class="tag-value">'Gigafactory Texas'</span>, <span class="tag-value">'1 Tesla Road Austin, TX 78725, USA'</span>),
+              (<span class="tag-value">'Boston Dynamics</span>, <span class="tag-value">'Headquarters'</span>, <span class="tag-value">'200 Smith St, Waltham, USA'</span>),
+              (<span class="tag-value">'Bank of Korea</span>, <span class="tag-value">'Main Department'</span>, <span class="tag-value">'67, Sejong-daero, Jung-gu, Seoul, South Korea'</span>)
+        <span class="code-token">ON CONFLICT</span> (<span class="code-token">"company_name"</span>, <span class="code-token">"department_name"</span>)
+        <span class="code-token">DO UPDATE SET</span> 
+              <span class="code-token">"company_name"</span> = EXCLUDED.<span class="code-token">"company_name"</span>,
+              <span class="code-token">"department_name"</span> = EXCLUDED.<span class="code-token">"department_name"</span>,
+              <span class="code-token">"department_address"</span> = EXCLUDED.<span class="code-token">"department_address"</span>;
+              </code></pre>
+          </div>
+
+
+        <p>Please note that by default, all tag values are extracted as text. That is, if the tag value is, for example, <code>123</code>, it will be extracted as a string <code>"123"</code>.</p>
+        <p>For the correct processing of different types, SmartXML provides several mechanisms, described in a separate article.</p>
+        <p>In cases where the data can be unambiguously interpreted as <i>integer</i>, <i>float</i>, or <i>bool</i>, on the <span class="ui-item">Rules</span>⮞<span class="ui-item">Tag Casting Rules</span> tab, it is sufficient to specify which tags should be cast to which types.</p>
+        <p>In our example, we will cast <code>founded_year</code> to <i>integer</i>, and <code>usa_resident</code> to <i>bool</i>.</p>
+        
+        <div class="img-container">
+          <img src="images/tag-casting-rules.png" />
+        </div>
+
+        <p>Now, after clicking the <span class="ui-item">to SQL</span> button, SQL will be generated with type casting taken into account:</p>
+
+        <div>
+            <pre><code>
+        <span class="code-token">INSERT INTO</span> <span class="table-name">customers</span> (<span class="code-token">"company_name"</span>, <span class="code-token">"key_person"</span>, <span class="code-token">"usa_resident"</span>, <span class="code-token">"founded_year"</span>)
+        <span class="code-token">VALUES</span> 
+              (<span class="tag-value">'Tesla'</span>, <span class="tag-value">'Elon Musk'</span>, <span class="tag-value">true</span>, <span class="tag-value">2003</span>),
+              (<span class="tag-value">'Boston Dynamics'</span>, <span class="tag-value">'Robert Playter'</span>, <span class="tag-value">true</span>, <span class="tag-value">1992</span>),
+              (<span class="tag-value">'Bank of Korea'</span>, <span class="tag-value">'Kim Seong Tae'</span>, <span class="tag-value">false</span>, <span class="tag-value">1950</span>)
+        <span class="code-token">ON CONFLICT</span> (<span class="code-token">"company_name"</span>)
+        <span class="code-token">DO UPDATE SET</span> 
+              <span class="code-token">"company_name"</span> = EXCLUDED.<span class="code-token">"company_name"</span>,
+              <span class="code-token">"key_person"</span> = EXCLUDED.<span class="code-token">"key_person"</span>,
+              <span class="code-token">"usa_resident"</span> = EXCLUDED.<span class="code-token">"usa_resident"</span>,
+              <span class="code-token">"founded_year"</span> = EXCLUDED.<span class="code-token">"founded_year"</span>;
+        
+        <span class="code-token">INSERT INTO</span> <span class="table-name">departments</span> (<span class="code-token">"company_name"</span>, <span class="code-token">"department_name"</span>, <span class="code-token">"department_address"</span>)
+        <span class="code-token">VALUES</span> 
+              (<span class="tag-value">'Tesla'</span>, <span class="tag-value">'Tesla Engineering'</span>, <span class="tag-value">'1501 Page Mill Road Palo Alto, Framingham, USA'</span>),
+              (<span class="tag-value">'Tesla'</span>, <span class="tag-value">'Gigafactory Texas'</span>, <span class="tag-value">'1 Tesla Road Austin, TX 78725, USA'</span>),
+              (<span class="tag-value">'Boston Dynamics'</span>, <span class="tag-value">'Headquarters'</span>, <span class="tag-value">'200 Smith St, Waltham, USA'</span>),
+              (<span class="tag-value">'Bank of Korea</span>', <span class="tag-value">'Main Department'</span>, <span class="tag-value">'67, Sejong-daero, Jung-gu, Seoul, South Korea'</span>)
+        <span class="code-token">ON CONFLICT</span> (<span class="code-token">"company_name"</span>, <span class="code-token">"department_name"</span>)
+        <span class="code-token">DO UPDATE SET</span> 
+              <span class="code-token">"company_name"</span> = EXCLUDED.<span class="code-token">"company_name"</span>,
+              <span class="code-token">"department_name"</span> = EXCLUDED.<span class="code-token">"department_name"</span>,
+              <span class="code-token">"department_address"</span> = EXCLUDED.<span class="code-token">"department_address"</span>;
+              </code></pre>
+  
+        <p>Structure of project directories and files:</p>
+        <pre>
+          <code>
+            basic-sample
+            ├── ignores
+            │   └── sample.txt
+            ├── rules
+            │   ├── complex-extract-rules.red
+            │   │       sample: []
+            │   ├── db-constraints-rules.red
+            │   │       sample: [
+            │   │           customers: [company_name] ; The uniqueness constraint must be set for column: company_name
+            │   │           departments: [company_name department_name] ; For columns company_name department_name must be set composite key uniqueness restriction 
+            │   │       ]
+            │   ├── grow-rules.red
+            │   │       sample: [
+            │   │           customer: ["customer"] ; key - name in intermediate representation, value - variants (one or more) of key writing in XML
+            │   │           department: ["department"] ; key - name in intermediate representation, value - variants (one or more) of key writing in XML
+            │   │       ]
+            │   ├── injection-rules.red
+            │   │       sample: [
+            │   │           inject-tag-to-every-children: []
+            │   │           enumerate-nodes: [department] ; if need to add sequential numbers to nodes. Always fixed name: item_number
+            │   │           injection-tag-and-recipients: [
+            │   │               company_name: [department] ; company_name will be passed to the department node. One or more lower-level nodes can be specified
+            │   │           ]
+            │   │       ]
+            │   ├── tags-casting-rules.red
+            │   │       sample: [
+            │   │           integer-list: [[to-integer to-float] [founded_year]] ; founded_year will be casted to integer
+            │   │           float-list: [[to-float] []]
+            │   │           bool-list: [[reduce to-word] [usa_resident]] ; usa_resident will be casted to logical (true/false)
+            │   │       ]
+            │   └── tags-matching-rules.red
+            │           #[
+            │               sample: #[
+            │                   company_name: [
+            │                       "customers customer name"
+            │                   ]
+            │                   key_person: [
+            │                       "customers customer keyPerson"
+            │                   ]
+            │                   usa_resident: [
+            │                       "customers customer UsaResident"
+            │                   ]
+            │                   founded_year: [
+            │                       "customers customer foundedYear"
+            │                   ]
+            │                   department_name: [
+            │                       "customers customer department name"
+            │                   ]
+            │                   department_address: [
+            │                       "customers customer department address"
+            │                   ]
+            │               ]
+            │           ]
+            ├── templates
+            │   └── data-templates.red
+            │           #[
+            │               sample: #[ ; section name
+            │                   sample: #[ ; subsection name 
+            │                       customers: [
+            │                           customer: [
+            │                               company_name: none
+            │                               key_person: none
+            │                               usa_resident: none
+            │                               founded_year: none
+            │                               departments: [
+            │                                   department: [
+            │                                       department_name: none
+            │                                       department_address: none
+            │                                   ]
+            │                               ]
+            │                           ]
+            │                       ]
+            │                   ]
+            │               ]
+            │           ]
+            ├── config.txt
+            │       ; allowed combinations: true false "..." none
+            │
+            │       job-number: 1 ; default number from job.txt
+            │       root-xml-folder: "D:/data-samples" ; in case the database stores relative paths without root directory
+            │       xml-filling-stat: false ; Record occupancy statistics to the database. table: filling_percent_stat should exists
+            │       ignore-namespaces: true ; Ignore namespaces in XML
+            │       ignore-tag-attributes: true ; 
+            │       use-same-morphology-for-same-file-name-pattern: false
+            │       skip-schema-version-tag: true
+            │       use-same-morphology-for-all-files-in-folder: false
+            │       delete-data-before-insert: false
+            │       connect-to-db-at-project-opening: false ; Only when working with the database
+            │       source-database: "SQLite" ; available values: PostgreSQL/SQLite
+            │       target-database: "SQLite" ; available values: PostgreSQL/SQLite/NoSQL
+            │       
+            |       ; it is possible to set up notification of unknown tags when persing
+            │       bot-chatID: "" ; 
+            │       bot-token: ""
+            │       telegram-notifications: false
+            │
+            │       db-driver: ""
+            │       db-server: "127.0.0.1"
+            │       db-port: "5432"
+            │       db-name: "test"
+            │       db-user: "postgres"
+            │       db-pass: ""
+            │
+            │       sqlite-driver-name: "SQLite3 ODBC Driver" ; check driver name. May vary
+            │       sqlite-db-path: ""
+            │
+            │       nosql-url: "http://localhost:8529/_db/testdb/_api/document/" ; sample for ArangoDB
+            │       append-subsection-name-to-nosql-url: true ; Some databases (such as ArangoDB) require you to pass the collection name in the URL
+            │       nosql-login: "root"
+            │       nosql-pass: "12345"
+            └── job.txt
+                    job-number: 1 ; number of where-condition. is required to work with the database. In case of multiprocessing, it is overridden via command line arguments for each application instance.
+                    xml-table-name: "xml_files" ; table name where XML references are stored
+                    limit: 1000 ; Number of files requested at a time for processing
+                    order_by: "id ASC" ; sort order 
+                    select-fields: [
+                        id xml_path ; mandatory fields must be in each table with xml_files
+                    ]
+                    where-condition: [
+                        [] ; SELECT ... WHERE. Recommended to customize from GUI
+                    ]            
+          </code>
+        </pre>
+
+
+  
+        </div>        
+
+
+
+      </article>
+
+    </main>
+
+    <include src="/components/footer.html"></include>
+
+</body>
+
+</html>

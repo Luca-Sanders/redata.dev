@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<head>
+   <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+   <link rel="stylesheet" href="/css/style.css">
+   <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries"
+      disabled="disabled">
+   <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries"
+      disabled="disabled">
+   <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+   <meta charset="utf-8">
+   <meta name="description" content="Configuring SmartXML for multiprocessing">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+   <script src="/js/pre-code-fix.js" defer></script>
+   <script src="//static.redata.dev/js/media-queries.js" defer></script>
+   <script src="//static.redata.dev/js/include.js" defer></script>
+   <script src="//static.redata.dev/js/ui.js" defer></script>
+   <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+
+   <title>Intermediate data presentation</title>
+</head>
+
+<body>
+   <main>
+
+      <header>
+         <include src="components/header.html"></include>
+         <div id="breadcrumb"></div>
+      </header>      
+
+      <article>
+
+   <p>In this example, we will look at the peculiarities of intermediate representation, handling complex cases, and solving problems with incorrect nesting of data in XML.</p>
+
+   <p>XML:</p>
+
+   <pre>
+      <code>
+      <span class="tag-name">&lt;books&gt;</span>
+            <span class="tag-name">&lt;publisher&gt;</span><span class="tag-value">Elsevier</span><span class="tag-name">&lt;/publisher&gt;</span>
+            <span class="tag-name">&lt;book</span> <span class="tag-attribute">id</span><span class="tag-equals">=</span><span class="tag-value">"1"</span><span class="tag-name">&gt;</span>
+               <span class="tag-name">&lt;title&gt;</span><span class="tag-value">The Origins of Totalitarianism</span><span class="tag-name">&lt;/title&gt;</span>
+               <span class="tag-name">&lt;author&gt;</span><span class="tag-value">Hannah Arendt</span><span class="tag-name">&lt;/author&gt;</span>
+            <span class="tag-name">&lt;/book&gt;</span>
+            <span class="tag-name">&lt;book</span> <span class="tag-attribute">id</span><span class="tag-equals">=</span><span class="tag-value">"2"</span><span class="tag-name">&gt;</span>
+               <span class="tag-name">&lt;title&gt;</span><span class="tag-value">Alone in the Ocean</span><span class="tag-name">&lt;/title&gt;</span>
+               <span class="tag-name">&lt;author&gt;</span><span class="tag-value">Stanislav Kurilov</span><span class="tag-name">&lt;/author&gt;</span>
+            <span class="tag-name">&lt;/book&gt;</span>
+            <span class="tag-name">&lt;customer&gt;</span>
+               <span class="tag-name">&lt;name&gt;</span><span class="tag-value">City Library</span><span class="tag-name">&lt;/name&gt;</span>
+            <span class="tag-name">&lt;/customer&gt;</span>
+      <span class="tag-name">&lt;/books&gt;</span>
+      </code>
+      </pre>
+
+   <p>Make sure that in <span class="code-inline-snippet">config.txt</span> the option: <span class="code-inline-snippet">ignore-tag-attributes: false</span> is set to <span class="code-inline-snippet">false</span>. This is necessary to handle tag attributes (<span class="code-inline-snippet">book id="1"</span>).</p> 
+
+   <p>Note that the very nodes with attributes from which values will be extracted should be added to <span class="code-inline-snippet">ignores/sample.txt</span> (<span class="code-inline-snippet">["books" "book"]</span>). The attribute values themselves will be extracted if <span class="code-inline-snippet">ignore-tag-attributes: false</span>.</p>
+   
+   <p>It is often impossible to tell from XML which node is a single node and which is an array. However, we often need to treat some nodes strictly as arrays (or as tables).</p>
+   
+   <p>In the example <span class="code-inline-snippet">books</span> has two descendants and it is obvious that it is an array.</p>
+   
+   <p>However, it is not clear from the example whether we can have more than one <span class="code-inline-snippet">customer</span>.
+   Let's assume that it can.</p>
+   <p>Also, in the example <span class="code-inline-snippet">customer</span> has an incorrect nesting - it is next to the multiple node <span class="code-inline-snippet">book</span>.
+   Then we must create some container that will play the role of a table for <span class="code-inline-snippet">customer</span> and specify that the first time a tag named <span class="code-inline-snippet">customer</span> is encountered, a parent container must be created that will play the role of a table (or array name). On each new encounter of the tag <span class="code-inline-snippet">customer</span>, the parent container will be refilled.</p>
+   
+   <p>Note. Not every valid intermediate representation can be translated into valid SQL and JSON. To generate correct SQL and JSON **you must take into account the peculiarities of these two formats, as well as the rules for describing and transforming an intermediate representation!**. </p>
+   <p>
+   Therefore, an attempt to describe the intermediate representation by duplicating the XML structure as much as possible will lead to incorrect generation of the result.</p>
+   
+   <p>Example of incorrect description:</p>
+          
+   <pre>
+   <code>
+      #[
+         sample: #[
+               sample_subcategory: #[   
+                  root_table: [        
+                     books_table: [     
+                           my_guid: #guid  ; #guid - magic constant just for illustrative purposes
+                           publisher: none  
+
+                           book_node_name: [ 
+                              book_id: none
+                              title: none
+                              author: none
+                           ]
+                     ]
+                     customer_table: [  
+                           customer_node_name: [ 
+                              customer_name: none
+                           ]
+                     ]
+                  ]
+               ]
+         ]
+      ]
+   </code>
+   </pre>
+
+      <p>Such a structure is equivalent to trying to generate <strong>invalid JSON</strong> with the following structure:</p>
+
+   <pre>
+      <code>
+         {
+            "root_table": [
+               "my_guid": "F182697C-U28E-CA6D-K301-P075U79T7I8N",
+               "publisher": "Elsevier",
+               [
+                  ...
+               ]
+            ]
+         }
+      </code>
+   </pre>      
+
+   <p>However, in doing so, an intermediate view would allow valid SQL to be created:</p>
+
+   <pre>
+      <code>
+INSERT INTO sample_subcategory ("my_guid", "publisher")
+  VALUES ('F182697C-U28E-CA6D-K301-P075U79T7I8N', 'Elsevier');
+
+INSERT INTO books_table ("my_guid", "book_id", "title", "author")
+  VALUES ('F182697C-U28E-CA6D-K301-P075U79T7I8N', '1', 'The Origins of Totalitarianism', 'Hannah Arendt'),
+         ('F182697C-U28E-CA6D-K301-P075U79T7I8N', '2', 'Alone in the Ocean', 'Stanislav Kurilov');
+
+INSERT INTO customer_table ("my_guid", "customer_name")
+  VALUES ('F182697C-U28E-CA6D-K301-P075U79T7I8N', 'City Library');
+      </code>
+   </pre>      
+
+
+   <p>Example of a valid intermediate intermediate intermediate representation generating correct but poorly usable JSON:</p>
+
+<pre>
+<code>
+   #[
+      sample: #[
+         sample_subcategory: #[   
+               my_guid: #guid   
+               publisher: none          
+               root_table: [        
+                  books_table: [        
+                     book_node_name: [ 
+                           book_id: none
+                           title: none
+                           author: none
+                     ]
+                  ]
+
+                  customer_table: [         
+                     customer_node_name: [ 
+                           customer_name: none
+                     ]
+                  ]
+               ]
+         ]
+      ]
+   ]
+</code>
+</pre>      
+
+<p>JSON:</p>      
+
+<pre>
+<code>
+   {
+      "my_guid": "F182697C-U28E-CA6D-K301-P075U79T7I8N",
+      "publisher": "Elsevier",
+      "root_table": [
+            [
+               {
+                  "my_guid": "F182697C-U28E-CA6D-K301-P075U79T7I8N",
+                  "book_id": "1",
+                  "title": "The Origins of Totalitarianism",
+                  "author": "Hannah Arendt"
+               },
+               {
+                  "my_guid": "F182697C-U28E-CA6D-K301-P075U79T7I8N",
+                  "book_id": "2",
+                  "title": "Alone in the Ocean",
+                  "author": "Stanislav Kurilov"
+               }
+            ],
+            [
+               {
+                  "my_guid": "F182697C-U28E-CA6D-K301-P075U79T7I8N",
+                  "customer_name": "City Library"
+               }
+            ]
+      ]
+   }
+</code>
+</pre>
+
+<p>SQL:</p>
+
+<pre>
+   <code>
+INSERT INTO sample_subcategory ("my_guid", "publisher")
+  VALUES ('F182697C-U28E-CA6D-K301-P075U79T7I8N', 'Elsevier');
+
+INSERT INTO books_table ("my_guid", "book_id", "title", "author")
+  VALUES ('F182697C-U28E-CA6D-K301-P075U79T7I8N', '1', 'The Origins of Totalitarianism', 'Hannah Arendt'),
+         ('F182697C-U28E-CA6D-K301-P075U79T7I8N', '2', 'Alone in the Ocean', 'Stanislav Kurilov');
+
+INSERT INTO customer_table ("my_guid", "customer_name")
+  VALUES ('F182697C-U28E-CA6D-K301-P075U79T7I8N', 'City Library');
+   </code>
+</pre>
+
+<p>However, despite the fact that the JSON above is valid, it is clearly not good to work with since we got two arrays in <span class="code-inline-snippet">root_table</span>: <span class="code-inline-snippet">[[[] []]</span>.</p>
+
+<p>However, the intermediate representation ignores the original XML nesting level. Let's describe the data in a similar way:</p>
+
+
+<p>JSON:</p>
+<pre>
+   <code>
+#[
+    sample: #[
+        sample_subcategory: #[   
+            my_guid: #guid   
+            publisher: none          
+            root_table: [ ; container for books         
+                book_node_name: [ 
+                    book_id: none
+                    title: none
+                    author: none
+                ]
+            ]
+            customer_table: [ ; container for customers        
+                customer_node_name: [ 
+                    customer_name: none
+                ]
+            ]
+        ]
+    ]
+]
+</code>
+</pre>
+
+<p>JSON:</p>
+<pre>
+<code>
+{
+    "my_guid": "F182697C-U28E-CA6D-K301-P075U79T7I8N",
+    "publisher": "Elsevier",
+    "root_table": [
+        {
+            "my_guid": "F182697C-U28E-CA6D-K301-P075U79T7I8N",
+            "book_id": "1",
+            "title": "The Origins of Totalitarianism",
+            "author": "Hannah Arendt"
+        },
+        {
+            "my_guid": "F182697C-U28E-CA6D-K301-P075U79T7I8N",
+            "book_id": "2",
+            "title": "Alone in the Ocean",
+            "author": "Stanislav Kurilov"
+        }
+    ],
+    "customer_table": [
+        {
+            "my_guid": "F182697C-U28E-CA6D-K301-P075U79T7I8N",
+            "customer_name": "City Library"
+        }
+    ]
+}
+</code>
+</pre>
+
+The <span class="code-inline-snippet">books</span> array is now built separately from the <span class="code-inline-snippet">customers</span> array.
+
+<p>SQL:</p>
+<pre>
+<code>
+INSERT INTO sample_subcategory ("my_guid", "publisher")
+ VALUES ('F182697C-U28E-CA6D-K301-P075U79T7I8N', 'Elsevier');
+
+INSERT INTO root_table ("my_guid", "book_id", "title", "author")
+  VALUES ('F182697C-U28E-CA6D-K301-P075U79T7I8N', '1', 'The Origins of Totalitarianism', 'Hannah Arendt'),
+         ('F182697C-U28E-CA6D-K301-P075U79T7I8N', '2', 'Alone in the Ocean', 'Stanislav Kurilov');
+
+INSERT INTO customer_table ("my_guid", "customer_name")
+  VALUES ('F182697C-U28E-CA6D-K301-P075U79T7I8N', 'City Library');
+</code>
+</pre>
+
+<p><span class="code-inline-snippet">grow-rules.red</span>:</p>
+
+<pre>
+<code>
+sample: [
+    root_table: ["books"] ; We'll create the table when we encounter the tag `books` (it's root tag)
+    book_node_name: ["book"] ; we need to indicate which names of multiple nodes
+    customer_node_name: ["customer"] ; When we meet `customer` then `customer_node_name` will start filling the parent of `customer_table`
+]
+</code>
+</pre>
+
+<p><span class="code-inline-snippet">tags-matching-rules.red</span>:</p>
+
+<pre>
+<code>
+sample: #[
+    publisher: [
+        "books publisher"
+    ]
+    book_id: [
+        "books book book_id"
+    ]
+    title: [
+        "books book title"
+    ]
+    author: [
+        "books book author"
+    ]
+    customer_name: [
+        "books customer name"
+    ]
+]
+</code>
+</pre>
+
+<p><span class="code-inline-snippet">injection-rules.red</span>:</p>
+<pre>
+<code>
+sample: [
+    inject-tag-to-every-children: [my_guid] ; pass to all child nodes
+    enumerate-nodes: [] 
+    injection-tag-and-recipients: []
+]
+</code>
+</pre>
+
+          
+      </article>
+
+
+   </main>
+   <include src="/components/footer.html"></include>
+</body>
+
+</html>

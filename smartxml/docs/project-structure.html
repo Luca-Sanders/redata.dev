@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+
+<head>
+  <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+  <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <meta charset="utf-8">
+  <meta name="description" content="Configuring SmartXML for multiprocessing">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <script src="/js/pre-code-fix.js" defer></script>
+  <script src="//static.redata.dev/js/media-queries.js" defer></script>
+  <script src="//static.redata.dev/js/include.js" defer></script>    
+  <script src="//static.redata.dev/js/ui.js" defer></script>  
+  <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+
+  <title>Project struct</title>
+</head>
+
+<body>
+    <main>
+      <header>
+         <include src="components/header.html"></include>
+         <div id="breadcrumb"></div>
+       </header>
+
+      <article>
+
+        <p>All projects must be located in the <span class="code-inline-snippet">projects</span> folder.</p>
+        <p>For installation version <span class="code-inline-snippet">projects</span> is located in user's HOME directory inside SmartXML directory.</p>
+        <p>If the Portable version is used, the <span class="code-inline-snippet">projects</span> folder must be located next to the program and have write permissions.</p>
+        
+        <p>Comments begin with the symbol <span class="code-inline-snippet">;</span>.</p>
+
+        <h3>Directory structure:</h3>
+        
+<pre><code>
+   projects/
+   └── sample-project/
+      ├── templates/
+      │   └── data-templates.red    
+      ├── ignores/
+      │   └── section_name.txt
+      ├── rules/
+      │   ├── tags-matching-rules.red
+      │   ├── grow-rules.red
+      │   ├── injection-rules.red
+      │   ├── db-constraints-rules.red
+      │   ├── tags-casting-rules.red
+      │   ├── complex-extract-rules.red
+      ├── config.txt
+      └── job.txt
+</code></pre>
+
+
+<h4>Sample XML for parsing:</h4>
+
+<pre><code>
+<span class="tag-name">&lt;data&gt;</span>
+   <span class="tag-name">&lt;account&gt;</span>
+     <span class="tag-name">&lt;miscInfo&gt;</span><span class="tag-value">Some miscellaneous information</span><span class="tag-name">&lt;/miscInfo&gt;</span>
+     <span class="tag-name">&lt;ownerName&gt;</span><span class="tag-value">John Doe</span><span class="tag-name">&lt;/ownerName&gt;</span>
+     <span class="tag-name">&lt;accountId&gt;</span><span class="tag-value">94967295</span><span class="tag-name">&lt;/accountId&gt;</span>
+     <span class="tag-name">&lt;phoneNumber&gt;</span><span class="tag-value">+1234567890</span><span class="tag-name">&lt;/phoneNumber&gt;</span>
+     <span class="tag-name">&lt;email&gt;</span><span class="tag-value">johndoe@example.com</span><span class="tag-name">&lt;/email&gt;</span>
+     <span class="tag-name">&lt;preferredLanguage&gt;</span><span class="tag-value">English</span><span class="tag-name">&lt;/preferredLanguage&gt;</span>
+     <span class="tag-name">&lt;themePreference&gt;</span><span class="tag-value">Dark</span><span class="tag-name">&lt;/themePreference&gt;</span>
+     <span class="tag-name">&lt;bankInfo&gt;</span>
+       <span class="tag-name">&lt;bankName&gt;</span><span class="tag-value">Bank of America</span><span class="tag-name">&lt;/bankName&gt;</span>
+       <span class="tag-name">&lt;branchCode&gt;</span><span class="tag-value">001</span><span class="tag-name">&lt;/branchCode&gt;</span>
+       <span class="tag-name">&lt;accountType&gt;</span><span class="tag-value">Personal</span><span class="tag-name">&lt;/accountType&gt;</span>
+     <span class="tag-name">&lt;/bankInfo&gt;</span>
+   <span class="tag-name">&lt;/account&gt;</span>
+   <span class="tag-name">&lt;transactions&gt;</span>
+     <span class="tag-name">&lt;transaction&gt;</span>
+         <span class="tag-name">&lt;amount&gt;</span><span class="tag-value">1200.00</span><span class="tag-name">&lt;/amount&gt;</span>
+         <span class="tag-name">&lt;currency&gt;</span><span class="tag-value">USD</span><span class="tag-name">&lt;/currency&gt;</span>
+         <span class="tag-name">&lt;transactionID&gt;</span><span class="tag-value">TX1003047</span><span class="tag-name">&lt;/transactionID&gt;</span>
+         <span class="tag-name">&lt;networkProvider&gt;</span><span class="tag-value">XYZ Telecom</span><span class="tag-name">&lt;/networkProvider&gt;</span>
+     <span class="tag-name">&lt;/transaction&gt;</span>
+     <span class="tag-name">&lt;transaction&gt;</span>
+         <span class="tag-name">&lt;amount&gt;</span><span class="tag-value">2700.00</span><span class="tag-name">&lt;/amount&gt;</span>
+         <span class="tag-name">&lt;currency&gt;</span><span class="tag-value">USD</span><span class="tag-name">&lt;/currency&gt;</span>
+         <span class="tag-name">&lt;transactionID&gt;</span><span class="tag-value">TX1003048</span><span class="tag-name">&lt;/transactionID&gt;</span>
+         <span class="tag-name">&lt;networkProvider&gt;</span><span class="tag-value">XYZ Telecom</span><span class="tag-name">&lt;/networkProvider&gt;</span>
+     <span class="tag-name">&lt;/transaction&gt;</span>        
+   <span class="tag-name">&lt;/transactions&gt;</span>
+<span class="tag-name">&lt;/data&gt;</span>
+</code></pre>
+
+
+<p>In order to parse XML, it is necessary to describe it in an intermediate representation and set the rules for transforming this representation.</p>
+
+<p>The intermediate representation is described in the file: <span class="code-inline-snippet">data-templates.red</span>.</p>
+<p>In the minimal variant it is obligatory to have at least one section and one sub-section.</p>
+<p>Sections are separate types of XML documents. Subsections are subtypes.</p>
+<p>For each section it is possible to set unique rules of XML document transformation.</p>
+<p>For all subsections, the parsing and transformation rules from the parent section are used.</p>
+<p>The name of the subsection is used as a table name when converting to SQL for data located in the root of XML.</p>
+
+<p>Example <span class="code-inline-snippet">data-templates.red</span> containing one section and one subsection. The intermediate data representation is not described:</p>
+
+
+<pre><code>
+#[
+    section_name: #[
+        subsection_name: #[
+
+        ]
+    ]
+]
+</code></pre>
+
+<p>An example of two sections (XML types). The second section has two XML subtypes.</p>
+<pre><code>
+#[
+    section_name: #[
+        subsection_name: #[]
+    ]
+    section2_name: #[
+        subsection1_name: #[]
+        subsection2_name: #[]
+    ]
+]    
+</code></pre>
+
+
+<p>A section must be created for each rule in the <span class="code-inline-snippet">rules</span> folder, even if the rule is not used.</p>
+
+<p>Each subtype must contain a description of the XML structure in an intermediate format. The structure of the intermediate format is described below.</p>
+
+<p>All nodes to be represented as tables (or as JSON arrays) must have a parent that will be used as the table name (or array name in the case of JSON). Example:</p>
+
+
+<pre><code>
+parent_name: [ ; container that will be used as  name of table or name of json array
+   some_node: [ ; node corresponding to a real node in XML
+
+   ]
+]
+</code></pre>
+
+<p>All values to be extracted must be described in the format: <code>value_name: none</code>.</p>
+<p>The value names will be used as database column names (in case of conversion to SQL) or as JSON field names (in case of conversion to JSON).</p>
+
+<p>Below is an example of a filled <span class="code-inline-snippet">data-templates.red</span> from which three tables (bank_transaction, banks, transactions) and two JSON arrays (banks and transactions) can be generated.</p>
+
+<pre><code>
+#[
+   section_name: #[
+        bank_transaction: #[ ; subsection name is used as a table name
+            owner_name: none
+            account_id: none
+            phone_number: none
+            email: none
+            banks: [ ; parent of a node that has a direct descendant of another node is used as the name of a table (or JSON array).
+              bank: [
+                bank_name: none
+                branch_code: none
+                account_type: none
+              ]
+            ]
+            transactions: [ ; parent of a node that has a direct descendant of another node is used as the name of a table (or JSON array).
+                transaction: [
+                    amount: none 
+                    currency: none 
+                    tid: none
+                ]
+            ]
+      ]
+
+  ]        
+]
+</code></pre>
+
+
+<p>The <span class="code-inline-snippet">tags-matching-rules.red</span> describes a name relationship in an intermediate representation with a sequence of nodes (tag chains) to the target data.</p>
+
+<p>If there are different spellings of the same nodes in XML, they can all be specified (as in the tid example).</p>
+<p>All node names must be unique.</p>
+
+<p>Example of filling: <span class="code-inline-snippet">tags-matching-rules.red</span>.</p>
+
+<pre><code>
+section_name:  #[
+        owner_name: [
+          "data account ownerName" 
+        ]
+        account_id: [
+          "data account accountId"         
+        ]
+        phone_number: [
+          "data account phoneNumber" 
+        ]
+        email: [
+          "data account email" 
+        ]
+        bank_name: [
+          "data account bankInfo bankName" 
+        ]
+        branch_code: [
+          "data account bankInfo branchCode" 
+        ]
+        account_type: [
+          "data account bankInfo accountType" 
+        ]
+        amount: [
+          "data transactions transaction amount" 
+        ] 
+        currency: [
+           "data transactions transaction currency" 
+        ] 
+        tid: [
+          "data transactions transaction transactionID" 
+          "data transactions transaction alternativeTransactionIdSpelling" 
+        ]
+]  
+</code></pre> 
+
+<p>If the XML contains nodes whose values we do not need, a file is created in the <span class="code-inline-snippet">ignores</span> directory for each section that describes the sequence of nodes to be ignored.</p>
+<p>An example of the contents of <span class="code-inline-snippet">section_name.txt</span>:</p>
+
+
+<pre><code>
+["data" "account" "miscInfo"]
+["data" "account" "preferredLanguage"]
+["data" "account" "themePreference"]
+["data" "transactions" "transaction" "networkProvider"]
+</code></pre> 
+
+
+
+<p>The <span class="code-inline-snippet">grow-rules.red</span> specifies the names of nodes in the intermediate representation and their XML spelling variants. Without this rule, when nodes are encountered, the application will skip them.</p>
+
+
+<p>Correct node completion is due to the <span class="code-inline-snippet">grow-rules.red</span> rule:</p>
+
+<pre><code>
+section_name: [
+   transaction: ["transaction" "transactionSpellingA" "transactionSpellingB"] 
+   bank: ["bankInfo"]
+]
+</code></pre> 
+
+<p>An example of JSON generated without <span class="code-inline-snippet">grow-rules.red</span> rule:</p>
+
+<pre><code>
+{
+  "owner_name": "John Doe",
+  "account_id": "94967295",
+  "phone_number": "+1234567890",
+  "email": "johndoe@example.com"
+}
+</code></pre> 
+
+
+<p>An example of SQL generated without <span class="code-inline-snippet">grow-rules.red</span> rule:</p>
+<pre><code>
+INSERT INTO bank_transaction ("owner_name", "account_id", "phone_number", "email")
+  VALUES ('John Doe', '94967295', '+1234567890', 'johndoe@example.com');
+</code></pre> 
+
+
+<p>JSON generated with <span class="code-inline-snippet">grow-rules.red</span>:</p>
+
+<pre><code>
+{
+   "owner_name": "John Doe",
+   "account_id": "94967295",
+   "phone_number": "+1234567890",
+   "email": "johndoe@example.com",
+   "banks": [
+      {
+         "bank_name": "Bank of America",
+         "branch_code": "001",
+         "account_type": "Personal"
+      }
+   ],
+   "transactions": [
+      {
+         "amount": "1200.00",
+         "currency": "USD",
+         "tid": "TX1003047"
+      },
+      {
+         "amount": "2700.00",
+         "currency": "USD",
+         "tid": "TX1003048"
+      }
+   ]
+}
+</code></pre> 
+
+<p>Generated SQL:</p>
+
+<pre><code>
+INSERT INTO bank_transaction ("owner_name", "account_id", "phone_number", "email")
+  VALUES ('John Doe', '94967295', '+1234567890', 'johndoe@example.com');
+
+INSERT INTO banks ("bank_name", "branch_code", "account_type")
+  VALUES ('Bank of America', '001', 'Personal');
+
+INSERT INTO transactions ("amount", "currency", "tid")
+  VALUES ('1200.00', 'USD', 'TX1003047'),
+         ('2700.00', 'USD', 'TX1003048');
+</code></pre> 
+
+
+<p>In case the nesting of nodes is not specified in this way, but described based on the XML 1to1 structure, i.e. omit <span class="code-inline-snippet">banks</span>:</p>
+
+<pre><code>
+#[
+   section_name: #[
+        bank_transaction: #[
+            owner_name: none
+            account_id: none
+            phone_number: none
+            email: none
+            bank: [
+                bank_name: none
+                branch_code: none
+                account_type: none
+              ]
+              transactions: [
+                transaction: [
+                    amount: none 
+                    currency: none 
+                    tid: none
+                ]
+              ]
+      ]
+
+  ]        
+]
+</code></pre> 
+
+
+<p>Then when generating SQL and JSON, the contents of <span class="code-inline-snippet">banks</span> will be ignored:</p>
+
+<p>JSON example:</p>
+
+<pre><code>
+{
+   "owner_name": "John Doe",
+   "account_id": "94967295",
+   "phone_number": "+1234567890",
+   "email": "johndoe@example.com",
+   "transactions": [
+      {
+         "amount": "1200.00",
+         "currency": "USD",
+         "tid": "TX1003047"
+      },
+      {
+         "amount": "2700.00",
+         "currency": "USD",
+         "tid": "TX1003048"
+      }
+   ]
+}
+</code></pre> 
+
+
+
+<p>Example SQL:</p>
+<pre><code>
+INSERT INTO bank_transaction ("owner_name", "account_id", "phone_number", "email")
+  VALUES ('John Doe', '94967295', '+1234567890', 'johndoe@example.com'),
+          ('Bank of America', '001', 'Personal');
+  
+INSERT INTO transactions ("amount", "currency", "tid")
+  VALUES ('1200.00', 'USD', 'TX1003047'),
+          ('2700.00', 'USD', 'TX1003048');
+</code></pre> 
+
+
+ <p>If the contents of <span class="code-inline-snippet">banks</span> do not need to be stored in a separate table (or JSON array), the <span class="code-inline-snippet">banks</span> node should be omitted:</p>
+
+<pre><code>
+#[
+   section_name: #[
+        bank_transaction: #[
+            owner_name: none
+            account_id: none
+            phone_number: none
+            email: none
+
+            bank_name: none
+            branch_code: none
+            account_type: none
+
+            transactions: [
+                transaction: [
+                    amount: none 
+                    currency: none 
+                    tid: none
+                ]
+              ]
+      ]
+
+  ]        
+]
+</code></pre> 
+
+
+ <p>JSON:</p>
+<pre><code>
+   {
+      "owner_name": "John Doe",
+      "account_id": "94967295",
+      "phone_number": "+1234567890",
+      "email": "johndoe@example.com",
+      "bank_name": "Bank of America",
+      "branch_code": "001",
+      "account_type": "Personal",
+      "transactions": [
+         {
+            "amount": "1200.00",
+            "currency": "USD",
+            "tid": "TX1003047"
+         },
+         {
+            "amount": "2700.00",
+            "currency": "USD",
+            "tid": "TX1003048"
+         }
+      ]
+   }
+</code></pre> 
+
+
+<p>SQL:</p>
+<pre><code>
+INSERT INTO bank_transaction ("owner_name", "account_id", "phone_number", "email", "bank_name", "branch_code", "account_type")
+  VALUES ('John Doe', '94967295', '+1234567890', 'johndoe@example.com', 'Bank of America', '001', 'Personal');
+  
+INSERT INTO transactions ("amount", "currency", "tid")
+  VALUES ('1200.00', 'USD', 'TX1003047'),
+         ('2700.00', 'USD', 'TX1003048');
+</code></pre> 
+
+
+
+<p>Let's restore the original <span class="code-inline-snippet">data-templates.red</span> structure:</p>
+
+<pre><code>
+   #[
+      section_name: #[
+           bank_transaction: #[ ; subsection name is used as a table name
+               owner_name: none
+               account_id: none
+               phone_number: none
+               email: none
+               banks: [ ; parent of a node that has a direct descendant of another node is used as the name of a table (or JSON array).
+                 bank: [
+                   bank_name: none
+                   branch_code: none
+                   account_type: none
+                 ]
+               ]
+               transactions: [ ; parent of a node that has a direct descendant of another node is used as the name of a table (or JSON array).
+                   transaction: [
+                       amount: none 
+                       currency: none 
+                       tid: none
+                   ]
+               ]
+         ]
+   
+     ]        
+   ]
+</code></pre>
+
+
+<p><span class="code-inline-snippet">injection-rules.red</span> allows you to pass values from parents to descendants:</p>
+
+<pre><code>
+section_name: [
+  enumerate-nodes: [] 
+  inject-tag-to-every-children: [account_id] 
+  injection-tag-and-recipients: []
+] 
+</code></pre> 
+
+
+<p>When this rule is used, <span class="code-inline-snippet">account_id</span> will be passed to all descendants a level below.</p>
+<p>JSON:</p>
+
+<pre><code>
+   {
+      "owner_name": "John Doe",
+      "account_id": "94967295",
+      "phone_number": "+1234567890",
+      "email": "johndoe@example.com",
+      "bank_name": "Bank of America",
+      "branch_code": "001",
+      "account_type": "Personal",
+      "transactions": [
+         {
+            "account_id": "94967295",
+            "amount": "1200.00",
+            "currency": "USD",
+            "tid": "TX1003047"
+         },
+         {
+            "account_id": "94967295",
+            "amount": "2700.00",
+            "currency": "USD",
+            "tid": "TX1003048"
+         }
+      ]
+   }
+</code></pre> 
+
+
+<p>SQL:</p>
+<pre><code>
+INSERT INTO bank_transaction ("owner_name", "account_id", "phone_number", "email")
+  VALUES ('John Doe', '94967295', '+1234567890', 'johndoe@example.com');
+
+INSERT INTO banks ("account_id", "bank_name", "branch_code", "account_type")
+  VALUES ('94967295', 'Bank of America', '001', 'Personal');
+
+INSERT INTO transactions ("account_id", "amount", "currency", "tid")
+  VALUES ('94967295', '1200.00', 'USD', 'TX1003047'),
+         ('94967295', '2700.00', 'USD', 'TX1003048');
+</code></pre> 
+
+ <p>It is possible to pass tags only to specific descendants.</p>
+ <p><span class="code-inline-snippet">injection-rules.red</span>:</p>
+
+
+<pre><code>
+section_name: [
+  enumerate-nodes: [] 
+  inject-tag-to-every-children: [] 
+  injection-tag-and-recipients: [
+     account_id: [transaction] 
+     owner_name: [bank transaction]
+  ]
+] 
+</code></pre> 
+
+<p>In this case, <span class="code-inline-snippet">account_id</span> will only be passed to <span class="code-inline-snippet">transactions</span> and <span class="code-inline-snippet">owner_name</span> to the <span class="code-inline-snippet">banks</span> and <span class="code-inline-snippet">transactions</span> node.</p>
+
+
+<p>JSON:</p>
+<pre><code>
+{
+   "owner_name": "John Doe",
+   "account_id": "94967295",
+   "phone_number": "+1234567890",
+   "email": "johndoe@example.com",
+   "banks": [
+      {
+         "owner_name": "John Doe",
+         "bank_name": "Bank of America",
+         "branch_code": "001",
+         "account_type": "Personal"
+      }
+   ],
+   "transactions": [
+      {
+         "owner_name": "John Doe",
+         "account_id": "94967295",
+         "amount": "1200.00",
+         "currency": "USD",
+         "tid": "TX1003047"
+      },
+      {
+         "owner_name": "John Doe",
+         "account_id": "94967295",
+         "amount": "2700.00",
+         "currency": "USD",
+         "tid": "TX1003048"
+      }
+   ]
+}
+</code></pre> 
+
+<p>SQL:</p>
+
+<pre><code>
+INSERT INTO bank_transaction ("owner_name", "account_id", "phone_number", "email")
+  VALUES ('John Doe', '94967295', '+1234567890', 'johndoe@example.com');
+
+INSERT INTO banks ("owner_name", "bank_name", "branch_code", "account_type")
+  VALUES ('John Doe', 'Bank of America', '001', 'Personal');
+
+INSERT INTO transactions ("owner_name", "account_id", "amount", "currency", "tid")
+  VALUES ('John Doe', '94967295', '1200.00', 'USD', 'TX1003047'),
+         ('John Doe', '94967295', '2700.00', 'USD', 'TX1003048');
+</code></pre> 
+
+<p>Note that it is the name of the end nodes in the intermediate representation that must be specified. So not <span class="code-inline-snippet">transactions</span> but <span class="code-inline-snippet">transaction</span>, not <span class="code-inline-snippet">banks</span> but <span class="code-inline-snippet">banks</span>.</p>
+
+<p>We also have the possibility to number multiple nodes by inserting the value: <span class="code-inline-snippet">item_number</span>.</p>
+
+<p>The rule will look like this:</p>
+
+<pre><code>
+section_name: [
+  enumerate-nodes: [transaction] 
+  inject-tag-to-every-children: [] 
+  injection-tag-and-recipients: []
+] 
+</code></pre> 
+
+<p>Result:</p>
+<pre><code>
+{
+   "owner_name": "John Doe",
+   "account_id": "94967295",
+   "phone_number": "+1234567890",
+   "email": "johndoe@example.com",
+   "banks": [
+      {
+         "bank_name": "Bank of America",
+         "branch_code": "001",
+         "account_type": "Personal"
+      }
+   ],
+   "transactions": [
+      {
+         "item_number": 1,
+         "amount": "1200.00",
+         "currency": "USD",
+         "tid": "TX1003047"
+      },
+      {
+         "item_number": 2,
+         "amount": "2700.00",
+         "currency": "USD",
+         "tid": "TX1003048"
+      }
+   ]
+}
+</code></pre> 
+
+
+<p>SQL:</p>
+<pre><code>
+INSERT INTO bank_transaction ("owner_name", "account_id", "phone_number", "email")
+  VALUES ('John Doe', '94967295', '+1234567890', 'johndoe@example.com');
+
+INSERT INTO banks ("bank_name", "branch_code", "account_type")
+  VALUES ('Bank of America', '001', 'Personal');
+
+INSERT INTO transactions ("item_number", "amount", "currency", "tid")
+  VALUES (1, '1200.00', 'USD', 'TX1003047'),
+         (2, '2700.00', 'USD', 'TX1003048');
+</code></pre> 
+
+       
+<p>If it is required to consider uniqueness restrictions on database columns, the <span class="code-inline-snippet">db-constraints-rules.red</span> rule is used:</p>
+<pre><code>
+section_name: [
+    transactions: [account_id] 
+    banks: [bank branch_code]
+] 
+</code></pre> 
+
+
+
+<p>JSON is not affected by it:</p>
+<pre><code>
+{
+   "owner_name": "John Doe",
+   "account_id": "94967295",
+   "phone_number": "+1234567890",
+   "email": "johndoe@example.com",
+   "banks": [
+      {
+         "bank_name": "Bank of America",
+         "branch_code": "001",
+         "account_type": "Personal"
+      }
+   ],
+   "transactions": [
+      {
+         "amount": "1200.00",
+         "currency": "USD",
+         "tid": "TX1003047"
+      },
+      {
+         "amount": "2700.00",
+         "currency": "USD",
+         "tid": "TX1003048"
+      }
+   ]
+}
+</code></pre> 
+
+
+<p>However, SQL generation generates a query subject to uniqueness constraints:</p>
+
+<pre><code>
+INSERT INTO bank_transaction ("owner_name", "account_id", "phone_number", "email")
+ VALUES ('John Doe', '94967295', '+1234567890', 'johndoe@example.com');
+
+INSERT INTO banks ("bank_name", "branch_code", "account_type")
+ VALUES ('Bank of America', '001', 'Personal')
+ ON CONFLICT ("bank", "branch_code")
+ DO UPDATE SET "bank_name" = EXCLUDED."bank_name", "branch_code" = EXCLUDED."branch_code", "account_type" = EXCLUDED."account_type";
+
+INSERT INTO transactions ("amount", "currency", "tid")
+ VALUES ('1200.00', 'USD', 'TX1003047'),('2700.00', 'USD', 'TX1003048')
+ ON CONFLICT ("account_id")
+ DO UPDATE SET "amount" = EXCLUDED."amount", "currency" = EXCLUDED."currency", "tid" = EXCLUDED."tid";
+</code></pre> 
+
+
+<p>By default, all values from XML are extracted as text values.</p>
+<p>Type conversion rules are defined in <span class="code-inline-snippet">tags-casting-rules.red</span>.</p>
+
+<pre><code>
+section_name: [
+    integer-list: [[to-integer to-float] [account_id amount]] 
+    float-list: [[to-float] []] 
+    bool-list: [[reduce to-word] []]
+] 
+</code></pre> 
+
+
+<p>The rules of type conversion are discussed in more detail in the article <a href="https://redata.dev/smartxml/docs/type-conversion-in-xml-documents.html">type-conversion-in-xml-documents</a>.</p>
+
+<p>JSON:</p>
+<pre><code>
+{
+   "owner_name": "John Doe",
+   "account_id": 94967295,
+   "phone_number": "+1234567890",
+   "email": "johndoe@example.com",
+   "banks": [
+      {
+         "bank_name": "Bank of America",
+         "branch_code": "001",
+         "account_type": "Personal"
+      }
+   ],
+   "transactions": [
+      {
+         "amount": 1200,
+         "currency": "USD",
+         "tid": "TX1003047"
+      },
+      {
+         "amount": 2700,
+         "currency": "USD",
+         "tid": "TX1003048"
+      }
+   ]
+}
+</code></pre> 
+
+<p>SQL:</p>
+<pre><code>
+INSERT INTO bank_transaction ("owner_name", "account_id", "phone_number", "email")
+  VALUES ('John Doe', 94967295, '+1234567890', 'johndoe@example.com');
+
+INSERT INTO banks ("bank_name", "branch_code", "account_type")
+  VALUES ('Bank of America', '001', 'Personal');
+
+INSERT INTO transactions ("amount", "currency", "tid")
+  VALUES (1200, 'USD', 'TX1003047'),
+         (2700, 'USD', 'TX1003048');
+</code></pre> 
+
+<p>The rules of <span class="code-inline-snippet">complex-extract-rules.red</span> are described in article <a href="https://redata.dev/smartxml/docs/type-conversion-in-xml-documents.html">type-conversion-in-xml-documents</a> </p>
+
+ <p><span class="code-inline-snippet">config.txt</span> structure:</p>
+
+
+<pre><code>
+; allowed combinations: true false "..." none
+
+root-xml-folder: "" ; if xml_path in DB is relative
+xml-filling-stat: true ; table: filling_percent_stat should exists
+ignore-namespaces: true
+ignore-tag-attributes: true
+use-same-morphology-for-same-file-name-pattern: false
+skip-schema-version-tag: true
+use-same-morphology-for-all-files-in-folder: false
+delete-data-before-insert: none
+connect-to-db-at-project-opening: false
+source-database: "PostgreSQL" ; available values: PostgreSQL/SQLite
+target-database: "PostgreSQL" ; available values: PostgreSQL/SQLite/NoSQL
+
+bot-chatID: ""
+bot-token: ""
+telegram-notifications: none
+
+db-driver: ""
+db-server: "127.0.0.1"
+db-port: "5432"
+db-name: "test"
+db-user: "postgres"
+db-pass: ""
+
+sqlite-driver-name: none
+sqlite-db-path: none
+
+nosql-url: ""
+append-subsection_name-to-nosql-url: true
+nosql-login: "root"
+nosql-pass: ""
+</code></pre> 
+
+
+<p><span class="code-inline-snippet">job.txt</span> is necessary if references to XML are located in the database</p>
+
+<pre><code>
+job-number: 1 ; default where condition block number
+xml-table-name: "xml_files" ; name of table where full path to XML is store
+limit: 1000 
+order_by: "id DESC" 
+select-fields: [
+    id xml_path ; columns id and xml_path is required in xml_files table!
+] 
+where-condition: [
+   [
+    job_numnber: [1 2 3]
+    doc_date: [2024-01-01 2030-01-01] ; date range
+    region: ["USA"]
+    doc_type: "type_a" ; "type_a" "type_b" "type_c"
+    parsing_status: "NULL" ; "NULL" "NOT NULL" "someWord" or logical: true\false
+    action_type: "data_insert" ; or data_update if doc only patch table
+   ]          
+
+   [
+    job_numnber: [5 6 7]
+    doc_date: [2024-01-01 2030-01-01] ; date range
+    region: ["Europe" "Australia"]
+    doc_type: "type_a" ; "type_a" "type_b" "type_c"
+    parsing_status: "NULL" ; "NULL" ; "NULL" "NOT NULL" "someWord" or logical: true\false
+    some_other_column: "NULL" ; "NULL" ; "NULL" "NOT NULL" "someWord" or logical: true\false
+    action_type: "data_insert" ; or data_update if doc only patch table
+   ]  
+]
+</code></pre> 
+
+
+<p>The structure of the assignments is described in more detail in the article <a href="https://redata.dev/smartxml/docs/jobs-settings.html">jobs-settings</a> </p>
+      
+    </article>
+
+  </main>
+  <include src="/components/footer.html"></include>
+</body>
+
+</html>

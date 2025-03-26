@@ -1,0 +1,408 @@
+article aside {
+    border: 0.1rem double #5b7a86;
+    padding: 0.8rem;
+}
+
+.price-block-parent {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.price-items {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    white-space: nowrap;
+    gap: 10px;
+}
+
+.price-items aside {
+    margin-top: 0.1em;
+    flex-basis: 18em;
+}
+
+.price-items h4 {
+    font-weight: 700;
+}
+
+.download-table-tab-wrapper {
+    margin-bottom: 1.25rem;
+}
+
+.download-table-tab-wrapper > ul {
+    margin-bottom: 1.25rem;
+}
+
+.download-table-tab-control {
+    font-size: 1.1rem;
+    margin: 0.1rem;
+    display: flex;
+    list-style: none;
+    justify-content: center;
+}
+
+.download-table-tab-control:hover {
+    cursor: pointer;
+}
+
+.download-table-tab-control.active {
+    z-index: 1;
+}
+
+.download-tab-panel {
+    font-size: 1.05rem;
+    word-break: break-word;
+    display: none;
+}
+
+.download-tab-panel.active {
+    word-break: break-word;
+    display: block;
+}
+
+.video {
+    padding-top: 2rem;
+    width: 80%;
+    margin: 0 auto;
+    padding-bottom: 2rem;
+}
+
+.video > img {
+    width: 100%;
+    object-fit: contain;
+}
+
+iframe {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+}
+
+#smartxml > h4 {
+    margin: 0 0 10px 0;
+}
+
+.rotated {
+    transform: rotate(90deg);
+    display: inline-block;
+}
+
+.table-of-contents {
+    width: 100%;
+
+    display: flex;
+    justify-self: start;
+    flex-direction: column;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        text-align: left;
+    }
+}
+
+p.green {
+    margin: 0;
+    background-color: rgb(146 199 240 / 80%);
+}
+
+p.red {
+    margin: 0;
+    background-color: rgb(255 0 0 / 50%);
+}
+
+p.orange {
+    margin: 0;
+    background-color: rgb(249 157 157 / 50%);
+}
+
+form {
+    border: 1px solid var(--color-bg-secondary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow) var(--color-shadow);
+    text-align: var(--justify-normal);
+}
+
+form header {
+    margin: 1.5rem 0;
+    padding: 1.5rem 0;
+}
+
+.download-table-container {
+    width: 100%;
+}
+
+.download-table-container > div {
+    max-width: 100%;
+    overflow: auto;
+}
+
+table {
+    border: 1px solid black;
+    border-radius: var(--border-radius);
+    border-spacing: 0;
+    background: #fff;
+    margin: 0 auto;
+}
+
+table td,
+table th,
+table tr {
+    border: 1px solid black;
+    padding: 0.4rem 0.8rem;
+    text-align: var(--justify-important);
+}
+
+table thead {
+    background-color: var(--color-table);
+    border-collapse: collapse;
+    border-radius: var(--border-radius);
+    color: var(--color-bg);
+    margin: 0;
+    padding: 0;
+}
+
+table thead th:first-child {
+    border-top-left-radius: var(--border-radius);
+}
+
+table thead th:last-child {
+    border-top-right-radius: var(--border-radius);
+}
+
+table thead th:first-child,
+table tr td:first-child {
+    text-align: var(--justify-normal);
+}
+
+table tr:nth-child(even) {
+    background-color: var(--color-accent);
+}
+
+blockquote {
+    display: block;
+    font-size: 1rem;
+    background-color: #d5ebfd;
+    text-align: center;
+    margin: 10px 18px;
+}
+
+.selectedPeriod {
+    font-size: 1.1rem;
+    text-decoration: underline;
+    text-decoration-color: rgba(147, 18, 18, 0.724);
+    text-decoration-thickness: 0.15em;
+}
+
+.table-name {
+    background-color: #f9ccba;
+    color: #1b1b1b;
+    padding: 0.2rem;
+    border-radius: 4px;
+    font-weight: 550;
+}
+
+.tag-name {
+    border-radius: 4px;
+    padding: 0.2rem;
+    font-weight: 500;
+}
+
+.tag-value {
+    color: rgb(43, 230, 43);
+    border-radius: 4px;
+}
+
+.tag-name-active {
+    color: #f4aeae;
+    border-radius: 4px;
+}
+
+.ui-item {
+    font-family: "MonaspaceNeon-Regular";
+    white-space: nowrap;
+    background-color: #f4ede0;
+
+    color: #333;
+
+    padding: 0.2rem;
+
+    border: 2px solid #f3dda0;
+
+    border-radius: 4px;
+}
+
+.screenshot-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.code-token {
+    font-family: "MonaspaceNeon-ExtraLight";
+}
+
+.code-inline-snippet {
+    font-family: "MonaspaceNeon-ExtraLight";
+    font-weight: 600;
+    background-color: #ebeaea;
+    border: solid #b0e0e6 2px;
+    color: #000;
+    padding: 0.2rem;
+}
+
+.table__wrap {
+    max-width: 100%;
+    overflow: auto;
+}
+
+hr {
+    margin: 20px 0;
+}
+
+.price-items {
+    .red {
+        background-color: #ff7979;
+    }
+
+    .blue {
+        background-color: #507eb1;
+        color: rgb(255, 255, 255);
+    }
+}
+
+.slogan h2 {
+    margin: 0 20px;
+}
+
+.img_main {
+    flex: 1;
+    max-width: 50%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.img_main img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+#contacts {
+    font-size: 1rem;
+}
+
+.bold {
+    font-weight: 600;
+}
+
+.scroll_bar {
+    background: #d8e0ea;
+    width: 100%;
+}
+
+.scroll_bar ul {
+    display: flex;
+    list-style: none;
+    align-items: center;
+    justify-content: space-around;
+    margin: 20px 0;
+    flex-flow: row wrap;
+}
+
+.scroll_bar ul li {
+    order: 1 1 130px;
+}
+
+.copyright-link,
+.copyright-link a {
+    color: #283f59;
+    font-size: 1em;
+    font-weight: 400;
+}
+
+.price_block h5 {
+    margin-bottom: 10px;
+}
+
+.price_block p {
+    font-size: 1.1rem;
+    padding: 4px 0;
+    margin: 0;
+}
+
+.simple {
+    border: 5px solid #507eb1;
+}
+
+.simple h5 {
+    color: #000000;
+}
+
+.simple p {
+    color: #464646;
+}
+
+.no_incude {
+    text-decoration: line-through;
+    opacity: 0.7;
+    position: relative;
+}
+
+.no_incude sup {
+    position: absolute;
+    top: -10px;
+}
+
+.video-container {
+    display: flex;
+
+    justify-content: space-between;
+    justify-content: center;
+}
+
+.video-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.thumbnail {
+    width: 98%;
+    cursor: pointer;
+}
+
+.modal-video {
+    width: 100%;
+}
+
+dialog {
+    max-width: 80%;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}

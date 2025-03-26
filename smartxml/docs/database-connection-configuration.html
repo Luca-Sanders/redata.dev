@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+    <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+	<meta charset="utf-8">
+    <meta name="description" content="How to configure a connection to the SmartXML database">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script src="/js/pre-code-fix.js" defer></script>
+    <script src="//static.redata.dev/js/media-queries.js" defer></script>
+    <script src="//static.redata.dev/js/include.js" defer></script>   
+    <script src="//static.redata.dev/js/ui.js" defer></script> 
+    <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    
+    <title>Database connection configuration</title>
+</head>
+
+<body>
+
+    <main>
+        <header>
+            <include src="components/header.html"></include>
+            <div id="breadcrumb"></div>
+        </header>
+
+        <article>
+            <h2>Database connection configuration</h2>
+            <h3 id="sql-db-configuration">Configuration for working with relational databases: PostgreSQL/SQLite</h3>
+
+            <ol>
+                <li>
+                    <p>Install the 32-bit ODBC driver for the used database.</p>
+                    <p>For SQLite, you can download the driver <a href="http://www.ch-werner.de/sqliteodbc/sqliteodbc.exe">here</a>.</p>
+                    <p>For PostgreSQL, it is recommended to install the ODBC driver through the PostgreSQL Application Stack Builder, which comes with PostgreSQL.</p>
+                    <p>On Linux, use the instructions provided in the archive with the program.</p>
+                </li>
+                <li>
+                    <p>You can check the driver's name on Windows by running <span class="ui-item">ODBC Data Sources (32-bit)</span>.</p>
+                    <p>On the <span class="ui-item">Drivers</span> tab, make sure that the installed drivers are displayed. Their names may differ from the default names shown in the example. However, they are usually <code>PostgreSQL ODBC Driver(UNICODE)</code> and <code>SQLite3 ODBC Driver</code>.</p>
+                    <p>On Linux, the list of installed ODBC drivers is usually located in <span class="code-inline-snippet">/etc/odbcinst.ini</span>.</p>
+                </li>
+                <li>
+                    <p>Open your project and on the <span class="ui-item">Settings</span>⮞<span class="ui-item">Database</span> tab, specify the access credentials for the used databases. The example shows the SQLite configuration.</p>
+                    <div class="img-container">
+                        <img src="images/sqlite-driver-name.png" />
+                    </div>
+                    <p>Save the changes by clicking the <span class="ui-item">Save</span> button.</p>
+                </li>
+                <li>
+                    <p>Go to the <span class="ui-item">Settings</span>⮞<span class="ui-item">General</span> tab.</p>
+                    <div class="img-container">
+                        <img src="images/settings-general.png" />
+                    </div>
+                    <p>If the database stores the full path, leave the <span class="ui-item">XML Folder</span> field empty.</p>
+                    <p>If the database contains a relative path to XML files, specify the missing part of the path.</p>
+                    <p><strong>Example:</strong> If your database stores a link to a file relatively like <span class="code-inline-snippet">basic-sample/example_1.xml</span>, and the full path to the XML file looks like <span class="code-inline-snippet">D:\code\SmartXML\data-samples\basic-sample\example_1.xml</span>, then you need to specify the missing part of the path in this field, namely <span class="code-inline-snippet">D:\code\SmartXML\data-samples</span>. After that, SmartXML will concatenate these paths into the full path like <span class="code-inline-snippet">D:\code\SmartXML\data-samples\basic-sample\example_1.xml</span>.</p>
+                    <p>If necessary, enable the collection of statistics on the filling of parsed files (<span class="ui-item">Write to DB column filling stat</span>).</p>
+                    <p>Make sure the <span class="ui-item">Connect to DB at project opening</span> checkbox is checked.</p>
+                    <p>Set the <span class="ui-item">Source Database</span> and <span class="ui-item">Target Database</span> parameters to <code>SQLite</code>.</p>
+                    <p>Save the changes by clicking the <span class="ui-item">Save</span> button.</p>
+                    <p><strong>Be sure to restart SmartXML and reopen the project</strong>. Without this, the connection to the database will not be established.</p>
+                </li>
+            </ol>
+            
+
+            <h3 id="nosql-db-configuration">Configuration for Working with NoSQL Databases</h3>
+            <ol>
+                <li>
+                    <p>Make sure that your database supports operation via http(s) interface.</p>
+                </li> 
+                <li>
+                    <p>On the <span class="ui-item">Settings</span>⮞<span class="ui-item">General</span> tab, set the <span class="ui-item">Target Database</span> to <code>NoSQL</code>.</p>
+            
+                    <div class="img-container">
+                        <img src="images/settings-general-nosql.png" />
+                    </div>
+            
+                </li>
+                <li>
+                    <p>Go to the <span class="ui-item">Settings</span>⮞<span class="ui-item">Database</span>⮞<span class="ui-item">NoSQL Settings</span> tab and provide the access details: <span class="ui-item">NoSQL URL</span>, <span class="ui-item">login</span>, <span class="ui-item">password</span>.</p>
+            
+                    <div class="img-container">
+                        <img src="images/nosql-settings.png" />
+                    </div>
+            
+                </li>
+            
+                <p>Data logical grouping in NoSQL occurs through collections. In SmartXML, each section plays the role of a collection in NoSQL. Most popular databases require the URL for data submission to also include the collection name for insertion.</p>
+            
+                <p>Ensure that the checkbox <span class="ui-item">Use a subsection name as a collection name</span> is checked.</p>
+            
+                <p>Now, after parsing each file, it will be sent for insertion to an address with the following structure:</p>
+            
+                <p><code>http://localhost:8529/_db/[db-name]/_api/document/[subsection]</code></p>
+                <p>Where:</p>
+                <ul>
+                    <li><code>localhost</code> - server address</li>
+                    <li><code>8529</code> - port used by your database</li>
+                    <li><code>[db-name]</code> - name of the used database, may differ from the project name</li>
+                    <li><code>[subsection]</code> - collection name, which must match the sub-section name in SmartXML</li>
+                    <li><code>document</code> - type of stored data, specified when creating the collection</li>
+                </ul>
+            </ol>
+            
+
+
+            <p>
+                In the project <code>sample_1</code>, the section name is <code>sample</code>. In simple cases, the sub-section name can match the section name, and it does not matter.</p>
+            <div class="img-container">
+                <img src="images/section-name-sample.png" />
+            </div>
+            
+            <p>So, the correct <span class="ui-item">NoSQL URL</span> would be:
+                <code>http://localhost:8529/_db/testdb/_api/document/</code>
+            </p>
+            
+            <p>And the data will be sent to the address:
+                <code>http://localhost:8529/_db/testdb/_api/document/sample</code>
+            </p>
+            
+
+    
+            <h3>Configuring NoSQL Using ArangoDB as an Example</h3>
+
+            <div class="screenshot-list">
+                <details>
+                    <summary>Create a new database in ArangoDB</summary>
+            
+                    <div class="img-container">
+                        <img src="images/arangodb/add-db.png" />
+                    </div>
+            
+                </details>
+            
+                <details>
+                    <summary>Specify the name of the new database</summary>
+            
+                    <div class="img-container">
+                        <img src="images/arangodb/create-testdb.png" />
+                    </div>
+            
+                </details>
+            
+                <details>
+                    <summary>Switch to the new database, never use the system one</summary>
+            
+                    <div class="img-container">
+                        <img src="images/arangodb/switch-to-testdb-1.png" />
+                    </div>
+            
+                </details>
+            
+                <details>
+                    <summary>Select the created database</summary>
+            
+                    <div class="img-container">
+                        <img src="images/arangodb/switch-to-testdb-2.png" />
+                    </div>
+            
+                </details>
+            
+                <details>
+                    <summary>Add a new collection</summary>
+            
+                    <div class="img-container">
+                        <img src="images/arangodb/create-new-collection-1.png" />
+                    </div>
+            
+                </details>
+            
+                <details>
+                    <summary>Specify the name of the new collection. The name should match the names of sections in the project</summary>
+            
+                    <div class="img-container">
+                        <img src="images/arangodb/create-new-collection-2.png" />
+                    </div>
+                </details>
+            </div>
+            
+            <p>
+                After completing these steps, the NoSQL database is ready to load data.
+            </p>
+            
+                    
+        </article>
+
+
+    </main>
+    <include src="/components/footer.html"></include>
+</body>
+
+</html>

@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+
+<head>
+  <link rel="stylesheet" href="//static.redata.dev/css/global.css">
+<link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="//static.redata.dev/css/mobile-media-queries.css" id="mobile-media-queries" disabled="disabled">
+  <link rel="stylesheet" href="//static.redata.dev/css/desktop-media-queries.css" id="desktop-media-queries" disabled="disabled">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <meta charset="utf-8">
+  <meta name="description" content="How to perform parsing and loading of multiple XML files with different structure into the database">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <script src="/js/pre-code-fix.js" defer></script>
+  <script src="//static.redata.dev/js/media-queries.js" defer></script>
+  <script src="//static.redata.dev/js/include.js" defer></script>    
+  <script src="//static.redata.dev/js/ui.js" defer></script>  
+  <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+  
+  <title>How to load an XML Set into the Database</title>
+</head>
+
+<body>
+    <main>
+
+      <header>
+        <include src="components/header.html"></include>
+        <div id="breadcrumb"></div>
+      </header>      
+      
+      <article>
+        <h2>How to Load an XML Set into the Database</h2>
+
+        <p>Depending on the database where you want to load the parsing results, configure settings for <a href="./database-connection-configuration.html#sql-db-configuration">SQL databases</a> or <a href="./database-connection-configuration.html#nosql-db-configuration">NoSQL databases</a>.</p>
+        
+        <p>The test database is located at the following path: <span class="code-inline-snippet">data-samples\basic-sample-2\database.db</span>. The table that stores links to the original XML files is called <span class="table-name">xml_files</span> and has the following schema (you can read about the minimal required schema for working with the database in <a href="jobs-settings.html">this article</a>):</p>
+        
+
+          <div>
+              <pre><code>
+                <span class="code-token">CREATE TABLE</span> <span class="table-name">xml_files</span> (
+                    <span class="tag-name">id</span> <span class="code-token">INTEGER</span> <span class="code-token">PRIMARY KEY AUTOINCREMENT</span>,
+                    <span class="tag-name">xml_path</span> <span class="code-token">TEXT</span>,
+                    <span class="tag-name">parsing_status</span> <span class="code-token">TEXT</span>,
+                    <span class="tag-name">filling_percent_stat</span> <span class="code-token">NUMERIC</span>,
+                    <span class="tag-name">processed_date</span> <span class="code-token">TEXT</span>,
+                    <span class="code-token">CONSTRAINT</span> <span class="constraint-name">unique_xml_path</span> <span class="code-token">UNIQUE</span> (<span class="tag-name">xml_path</span>)
+                );
+              </code></pre>
+          </div>
+          
+          
+
+          <p>General view of the populated table:</p>
+
+        <div class="table__wrap">
+          <table>
+            <tr>
+              <th>id</th>
+              <th>xml_path</th>
+              <th>filling_percent_stat</th>
+              <th>parsing_status</th>
+              <th>processed_date</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>basic-sample-2/example_1.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>basic-sample-2/example_2.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>basic-sample-2/example_3.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>basic-sample-2/example_4.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>NULL</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>basic-sample-2/example_5.xml</td>
+              <td>NULL</td>
+              <td>NULL</td>
+              <td>NULL</td>
+            </tr>
+          </table>
+        </div>
+  
+        <p>The <span class="table-name">xml_files</span> column stores the relative path to the processing files.</p>
+        <p>Test XMLs for processing:</p>
+        
+        <div>
+          <details>
+            <summary>example_1.xml</summary>
+                <pre>
+                  <code>
+                  <span class="tag-name" style="color: code-token">&lt;?xml version="1.0"?&gt;</span>
+                  <span class="tag-name">&lt;customers&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                        <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Tesla</span><span class="tag-name">&lt;/name&gt;</span>
+                        <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Elon Musk</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                        <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                        <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">2003</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                        <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Tesla Engineering</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1501 Page Mill Road Palo Alto, Framingham, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                        <span class="tag-name">&lt;/department&gt;</span>
+                        <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Gigafactory Texas</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1 Tesla Road Austin, TX 78725, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                        <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                        <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Boston Dynamics</span><span class="tag-name">&lt;/name&gt;</span>
+                        <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Robert Playter</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                        <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                        <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1992</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                        <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Headquarters</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">200 Smith St, Waltham, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                        <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                        <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Bank of Korea</span><span class="tag-name">&lt;/name&gt;</span>
+                        <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Kim Seong Tae</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                        <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">No</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                        <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1950</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                        <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Main Department</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">67, Sejong-daero, Jung-gu, Seoul, South Korea</span><span class="tag-name">&lt;/address&gt;</span>
+                        <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                  <span class="tag-name">&lt;/customers&gt;</span>
+                </code>
+                </pre>
+    
+          </details>
+  
+  
+          <details>
+            <summary>example_2.xml</summary>
+   
+                <pre>
+                  <code>
+                    <span class="tag-name" style="color: code-token">&lt;?xml version="1.0"?&gt;</span>
+                    <span class="tag-name">&lt;customers&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Apple Inc.</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Tim Cook</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1976</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Software Engineering</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1 Apple Park Way, Cupertino, CA, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Microsoft Corporation</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Satya Nadella</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1975</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Amazon.com Inc.</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Andy Jassy</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1994</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Amazon Web Services</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">410 Terry Ave N, Seattle, WA, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Samsung Group</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Lee Kun-hee</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">No</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1938</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Samsung Electronics</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">129 Samsung-ro, Su-dong, Yeongtong-gu, Suwon-si, Gyeonggi-do, South Korea</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Samsung Heavy Industries</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">508, Maegok-dong, Changwon, South Korea</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                    <span class="tag-name">&lt;/customers&gt;</span>
+                  </code>
+                </pre>
+            
+          </details>
+  
+  
+          <details>
+            <summary>example_3.xml</summary>
+  
+                <pre>
+                  <code>
+                    <span class="tag-name" style="color: code-token">&lt;?xml version="1.0"?&gt;</span>
+                    <span class="tag-name">&lt;customers&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Volkswagen Group</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Herbert Diess</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">No</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1937</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Volkswagen Passenger Cars</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">Berliner Ring 2, 38440 Wolfsburg, Germany</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Audi</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">Auto-Union-Str. 1, 85045 Ingolstadt, Germany</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Unilever</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Alan Jope</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">No</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1930</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Unilever Food Solutions</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">Rotterdam, Netherlands</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Nestle</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Ulf Mark Schneider</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">No</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1866</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Nestle Waters</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">50 Rue Carnot, 92240 Malakoff, France</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Nestle Purina PetCare</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">50 Avenue de La Couronne, 1050 Ixelles, Belgium</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                        <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Siemens</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Roland Busch</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">No</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1847</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Siemens Energy</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">Werner-von-Siemens-Str. 1, 80333 Munich, Germany</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Philips</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Frans van Houten</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">No</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1891</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Healthcare</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">Amstelplein 2, 1096 BC Amsterdam, Netherlands</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                    <span class="tag-name">&lt;/customers&gt;</span>
+                  </code>
+                </pre>
+            
+          </details>
+  
+  
+          <details>
+            <summary>example_4.xml</summary>
+
+                <pre>
+                  <code>
+                    <span class="tag-name" style="color: code-token">&lt;?xml version="1.0"?&gt;</span>
+                    <span class="tag-name">&lt;customers&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Netflix</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Reed Hastings</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1997</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Content Production</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">123 Entertainment Ave, Los Gatos, CA 95032, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">SpaceX</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Elon Musk</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">2002</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Space Exploration</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1 Rocket Road Hawthorne, CA 90250, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Starlink</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">123 SpaceX Blvd, Hawthorne, CA 90250, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Amazon Web Services</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Andy Jassy</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">2006</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Cloud Services</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">AI and Machine Learning</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Toyota</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Akio Toyoda</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">No</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1937</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Research and Development</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">Toyota-cho, Toyota City, Aichi Prefecture 471-8571, Japan</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Adobe Systems</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Shantanu Narayen</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1982</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Software Development</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">345 Park Ave, San Jose, CA 95110, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Marketing</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">234 Adobe Way, San Jose, CA 95110, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                    <span class="tag-name">&lt;/customers&gt;</span>
+                  </code>
+                </pre>
+            
+          </details>
+  
+  
+          <details>
+            <summary>example_5.xml</summary>
+
+                <pre>
+                  <code>
+                    <span class="tag-name" style="color: code-token">&lt;?xml version="1.0"?&gt;</span>
+                    <span class="tag-name">&lt;customers&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Ford Motor Company</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Jim Farley</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1903</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Automotive Design</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">Dearborn, Michigan, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Alphabet Inc.</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Sundar Pichai</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">2015</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Google Search</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">1600 Amphitheatre Parkway, Mountain View, CA, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">General Electric</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">H. Lawrence Culp Jr.</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;UsaResident&gt;</span><span class="tag-value">Yes</span><span class="tag-name">&lt;/UsaResident&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1892</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                            <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Power</span><span class="tag-name">&lt;/name&gt;</span>
+                            <span class="tag-name">&lt;address&gt;</span><span class="tag-value">41 Farnsworth St, Boston, MA 02210, USA</span><span class="tag-name">&lt;/address&gt;</span>
+                          <span class="tag-name">&lt;/department&gt;</span>
+                      <span class="tag-name">&lt;/customer&gt;</span>
+                      <span class="tag-name">&lt;customer&gt;</span>
+                          <span class="tag-name">&lt;name&gt;</span><span class="tag-value">Sony Corporation</span><span class="tag-name">&lt;/name&gt;</span>
+                          <span class="tag-name">&lt;keyPerson&gt;</span><span class="tag-value">Kenichiro Yoshida</span><span class="tag-name">&lt;/keyPerson&gt;</span>
+                          <span class="tag-name">&lt;foundedYear&gt;</span><span class="tag-value">1946</span><span class="tag-name">&lt;/foundedYear&gt;</span>
+                          <span class="tag-name">&lt;department&gt;</span>
+                          </span>
+                      </span>
+                    <span class="tag-name">&lt;/customers&gt;</span>
+                  </code>
+                </pre>
+            
+          </details>
+  
+        </div>
+  
+        </p>
+  
+        <p>Open the project created in the previous <a href="/how-to-parse-xml-into-sql-or-json.html">step</a> - <code>basic-sample</code>.</p>
+        <p>Make sure the setting is enabled: <span class="ui-item">Settings</span>⮞<span class="ui-item">Write to DB columns filling stat</span></p>
+        
+  
+        <p>Go to the <span class="ui-item">Database</span> tab</p>
+        <div class="img-container">
+          <img src="images/start-parsing-from-db.png">
+        </div>
+        <p>If multi-processor processing is required, you will need to configure multiple <code>Job</code>. In this example, the default <code>Job</code> is used without specifying data selection settings. The processing will be done by one instance of SmartXML. The settings specified in the interface reflect the structure of the table <span class="table-name">xml_files</span> created in the first step. For more details on configuring multiple <code>Job</code>, you can read <a href="./jobs-settings.html">here</a>.</p>
+        
+        <p>Press <span class="ui-item">Get XML Count</span> to find out the number of files in the queue for processing.</p>
+        <p>Start parsing by clicking <span class="ui-item">Start Processing</span></p>
+        
+  
+        <p>After processing, the table <span class="table-name">xml_files</span> will look like this:</p>
+
+        <div class="table__wrap">
+          <table>
+            <tr>
+              <th>id</th>
+              <th>xml_path</th>
+              <th>filling_percent_stat</th>
+              <th>parsing_status</th>
+              <th>processed_date</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>basic-sample-2/example_1.xml</td>
+              <td>100</td>
+              <td>success</td>
+              <td>2024-03-21 15:10</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>basic-sample-2/example_2.xml</td>
+              <td>100</td>
+              <td>success</td>
+              <td>2024-03-21 15:10</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>basic-sample-2/example_3.xml</td>
+              <td>100</td>
+              <td>success</td>
+              <td>2024-03-21 15:10</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>basic-sample-2/example_4.xml</td>
+              <td>95</td>
+              <td>success</td>
+              <td>2024-03-21 15:10</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>basic-sample-2/example_5.xml</td>
+              <td>83</td>
+              <td>success</td>
+              <td>2024-03-21 15:10</td>
+            </tr>
+          </table>
+        </div>
+
+        <p>File parsing was successful. The value in <span class="ui-item">filling_percent_stat</span> indicates the percentage of data extracted from the total expected volume. As seen in the rows containing <code>NULL</code> in <code>example_4.xml</code> and <code>example_5.xml</code>, some fields that we expected to find are missing.</p>
+
+        <section>
+  
+          <h4>Results for SQL Database:</h4>
+
+          <p>Data loaded into the <span class="table-name">customers</span> table:</p>
+          
+          <div class="table__wrap">
+            <table>
+              <tr>
+                <th>id</th>
+                <th>company_name</th>
+                <th>key_person</th>
+                <th>usa_resident</th>
+                <th>founded_year</th>
+              </tr>
+              <tr>
+                <td>1</td>
+                <td>Tesla</td>
+                <td>Elon Musk</td>
+                <td>1</td>
+                <td>2003</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Boston Dynamics</td>
+                <td>Robert Playter</td>
+                <td>1</td>
+                <td>1992</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Bank of Korea</td>
+                <td>Kim Seong Tae</td>
+                <td>0</td>
+                <td>1950</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Apple Inc.</td>
+                <td>Tim Cook</td>
+                <td>1</td>
+                <td>1976</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Microsoft Corporation</td>
+                <td>Satya Nadella</td>
+                <td>1</td>
+                <td>1975</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Amazon.com Inc.</td>
+                <td>Andy Jassy</td>
+                <td>1</td>
+                <td>1994</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>Samsung Group</td>
+                <td>Lee Kun-hee</td>
+                <td>0</td>
+                <td>1938</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>Volkswagen Group</td>
+                <td>Herbert Diess</td>
+                <td>0</td>
+                <td>1937</td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>Unilever</td>
+                <td>Alan Jope</td>
+                <td>0</td>
+                <td>1930</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>Nestle</td>
+                <td>Ulf Mark Schneider</td>
+                <td>0</td>
+                <td>1866</td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td>Siemens</td>
+                <td>Roland Busch</td>
+                <td>0</td>
+                <td>1847</td>
+              </tr>
+              <tr>
+                <td>12</td>
+                <td>Philips</td>
+                <td>Frans van Houten</td>
+                <td>0</td>
+                <td>1891</td>
+              </tr>
+              <tr>
+                <td>13</td>
+                <td>Netflix</td>
+                <td>Reed Hastings</td>
+                <td>1</td>
+                <td>1997</td>
+              </tr>
+              <tr>
+                <td>14</td>
+                <td>SpaceX</td>
+                <td>Elon Musk</td>
+                <td>1</td>
+                <td>2002</td>
+              </tr>
+              <tr>
+                <td>15</td>
+                <td>Amazon Web Services</td>
+                <td>Andy Jassy</td>
+                <td>1</td>
+                <td>2006</td>
+              </tr>
+              <tr>
+                <td>16</td>
+                <td>Toyota</td>
+                <td>Akio Toyoda</td>
+                <td>0</td>
+                <td>1937</td>
+              </tr>
+              <tr>
+                <td>17</td>
+                <td>Adobe Systems</td>
+                <td>Shantanu Narayen</td>
+                <td>1</td>
+                <td>1982</td>
+              </tr>
+              <tr>
+                <td>18</td>
+                <td>Ford Motor Company</td>
+                <td>Jim Farley</td>
+                <td>1</td>
+                <td>1903</td>
+              </tr>
+              <tr>
+                <td>19</td>
+                <td>Alphabet Inc.</td>
+                <td>Sundar Pichai</td>
+                <td>1</td>
+                <td>2015</td>
+              </tr>
+              <tr>
+                <td>20</td>
+                <td>General Electric</td>
+                <td>H. Lawrence Culp Jr.</td>
+                <td>1</td>
+                <td>1892</td>
+              </tr>
+              <tr>
+                <td>21</td>
+                <td>Sony Corporation</td>
+                <td>Kenichiro Yoshida</td>
+                <td>NULL</td>
+                <td>1946</td>
+              </tr>
+            </table>
+          </div>
+  
+  
+  
+          <p>Data loaded into the <span class="table-name">departments</span> table:</p>
+
+  
+          <div class="table__wrap">
+            <table>
+              <tr>
+                <th>id</th>
+                <th>company_name</th>
+                <th>department_name</th>
+                <th>department_address</th>
+              </tr>
+              <tr>
+                <td>1</td>
+                <td>Tesla</td>
+                <td>Tesla Engineering</td>
+                <td>1501 Page Mill Road Palo Alto, Framingham, USA</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Tesla</td>
+                <td>Gigafactory Texas</td>
+                <td>1 Tesla Road Austin, TX 78725, USA</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Boston Dynamics</td>
+                <td>Headquarters</td>
+                <td>200 Smith St, Waltham, USA</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Bank of Korea</td>
+                <td>Main Department</td>
+                <td>67, Sejong-daero, Jung-gu, Seoul, South Korea</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Apple Inc.</td>
+                <td>Software Engineering</td>
+                <td>1 Apple Park Way, Cupertino, CA, USA</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Amazon.com Inc.</td>
+                <td>Amazon Web Services</td>
+                <td>410 Terry Ave N, Seattle, WA, USA</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>Samsung Group</td>
+                <td>Samsung Electronics</td>
+                <td>129 Samsung-ro, Su-dong, Yeongtong-gu, Suwon-si, Gyeonggi-do, South Korea</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>Samsung Group</td>
+                <td>Samsung Heavy Industries</td>
+                <td>508, Maegok-dong, Changwon, South Korea</td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>Volkswagen Group</td>
+                <td>Volkswagen Passenger Cars</td>
+                <td>Berliner Ring 2, 38440 Wolfsburg, Germany</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>Volkswagen Group</td>
+                <td>Audi</td>
+                <td>Auto-Union-Str. 1, 85045 Ingolstadt, Germany</td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td>Unilever</td>
+                <td>Unilever Food Solutions</td>
+                <td>Rotterdam, Netherlands</td>
+              </tr>
+              <tr>
+                <td>12</td>
+                <td>Nestle</td>
+                <td>Nestle Waters</td>
+                <td>50 Rue Carnot, 92240 Malakoff, France</td>
+              </tr>
+              <tr>
+                <td>13</td>
+                <td>Nestle</td>
+                <td>Nestle Purina PetCare</td>
+                <td>50 Avenue de La Couronne, 1050 Ixelles, Belgium</td>
+              </tr>
+              <tr>
+                <td>14</td>
+                <td>Siemens</td>
+                <td>Siemens Energy</td>
+                <td>Werner-von-Siemens-Str. 1, 80333 Munich, Germany</td>
+              </tr>
+              <tr>
+                <td>15</td>
+                <td>Philips</td>
+                <td>Healthcare</td>
+                <td>Amstelplein 2, 1096 BC Amsterdam, Netherlands</td>
+              </tr>
+              <tr>
+                <td>16</td>
+                <td>Netflix</td>
+                <td>Content Production</td>
+                <td>123 Entertainment Ave, Los Gatos, CA 95032, USA</td>
+              </tr>
+              <tr>
+                <td>17</td>
+                <td>SpaceX</td>
+                <td>Space Exploration</td>
+                <td>1 Rocket Road Hawthorne, CA 90250, USA</td>
+              </tr>
+              <tr>
+                <td>18</td>
+                <td>SpaceX</td>
+                <td>Starlink</td>
+                <td>123 SpaceX Blvd, Hawthorne, CA 90250, USA</td>
+              </tr>
+              <tr>
+                <td>19</td>
+                <td>Amazon Web Services</td>
+                <td>Cloud Services</td>
+                <td>Toyota-cho, Toyota City, Aichi Prefecture 471-8571, Japan</td>
+              </tr>
+              <tr>
+                <td>20</td>
+                <td>Amazon Web Services</td>
+                <td>AI and Machine Learning</td>
+                <td>345 Park Ave, San Jose, CA 95110, USA</td>
+              </tr>
+              <tr>
+                <td>21</td>
+                <td>Toyota</td>
+                <td>Research and Development</td>
+                <td>234 Adobe Way, San Jose, CA 95110, USA</td>
+              </tr>
+              <tr>
+                <td>22</td>
+                <td>Adobe Systems</td>
+                <td>Software Development</td>
+                <td>NULL</td>
+              </tr>
+              <tr>
+                <td>23</td>
+                <td>Adobe Systems</td>
+                <td>Marketing</td>
+                <td>NULL</td>
+              </tr>
+              <tr>
+                <td>24</td>
+                <td>Ford Motor Company</td>
+                <td>Automotive Design</td>
+                <td>Dearborn, Michigan, USA</td>
+              </tr>
+              <tr>
+                <td>25</td>
+                <td>Alphabet Inc.</td>
+                <td>Google Search</td>
+                <td>1600 Amphitheatre Parkway, Mountain View, CA, USA</td>
+              </tr>
+              <tr>
+                <td>26</td>
+                <td>General Electric</td>
+                <td>Power</td>
+                <td>41 Farnsworth St, Boston, MA 02210, USA</td>
+              </tr>
+              <tr>
+                <td>27</td>
+                <td>Sony Corporation</td>
+                <td>NULL</td>
+                <td>NULL</td>
+              </tr>
+            </table>
+          </div>
+  
+  
+          <p>NULL values indicate fields that were missing in the processed files.</p>
+
+  
+  
+        </section>
+  
+  
+        <section>
+          <h4>Results of XML loading into NoSQL:</h4>
+
+  
+          <div class="img-container">
+            <img src="images/arangodb/result-of-parsing-xml-1.png" />
+          </div>
+  
+          <p>Data loaded into the <code>sample</code> collection:</p>
+
+          <div>
+              <pre>
+                <code>
+                [
+                    <span class="tag-name">{</span>
+                      <span class="tag-name">"_key":</span> <span class="tag-value">"1393"</span>,
+                      <span class="tag-name">"_id":</span> <span class="tag-value">"sample/1393"</span>,
+                      <span class="tag-name">"_rev":</span> <span class="tag-value">"_g1BqrES---"</span>,
+                      <span class="tag-name">"customers":</span> <span class="tag-name">[</span>
+                          <span class="tag-name">{</span>
+                              <span class="tag-name">"company_name":</span> <span class="tag-value">"Ford Motor Company"</span>,
+                              <span class="tag-name">"key_person":</span> <span class="tag-value">"Jim Farley"</span>,
+                              <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                              <span class="tag-name">"founded_year":</span> <span class="tag-value">1903</span>,
+                              <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                                  <span class="tag-name">{</span>
+                                      <span class="tag-name">"department_name":</span> <span class="tag-value">"Automotive Design"</span>,
+                                      <span class="tag-name">"department_address":</span> <span class="tag-value">"Dearborn, Michigan, USA"</span>
+                                  <span class="tag-name">}</span>
+                              <span class="tag-name">]</span>
+                          <span class="tag-name">}</span>,
+                          <span class="tag-name">{</span>
+                              <span class="tag-name">"company_name":</span> <span class="tag-value">"Alphabet Inc."</span>,
+                              <span class="tag-name">"key_person":</span> <span class="tag-value">"Sundar Pichai"</span>,
+                              <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                              <span class="tag-name">"founded_year":</span> <span class="tag-value">2015</span>,
+                              <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                                  <span class="tag-name">{</span>
+                                      <span class="tag-name">"department_name":</span> <span class="tag-value">"Google Search"</span>,
+                                      <span class="tag-name">"department_address":</span> <span class="tag-value">"1600 Amphitheatre Parkway, Mountain View, CA, USA"</span>
+                                  <span class="tag-name">}</span>
+                              <span class="tag-name">]</span>
+                          <span class="tag-name">}</span>,
+                          <span class="tag-name">{</span>
+                              <span class="tag-name">"company_name":</span> <span class="tag-value">"General Electric"</span>,
+                              <span class="tag-name">"key_person":</span> <span class="tag-value">"H. Lawrence Culp Jr."</span>,
+                              <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                              <span class="tag-name">"founded_year":</span> <span class="tag-value">1892</span>,
+                              <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                                  <span class="tag-name">{</span>
+                                      <span class="tag-name">"department_name":</span> <span class="tag-value">"Power"</span>,
+                                      <span class="tag-name">"department_address":</span> <span class="tag-value">"41 Farnsworth St, Boston, MA 02210, USA"</span>
+                                  <span class="tag-name">}</span>
+                              <span class="tag-name">]</span>
+                          <span class="tag-name">}</span>,
+                          <span class="tag-name">{</span>
+                              <span class="tag-name">"company_name":</span> <span class="tag-value">"Sony Corporation"</span>,
+                              <span class="tag-name">"key_person":</span> <span class="tag-value">"Kenichiro Yoshida"</span>,
+                              <span class="tag-name">"usa_resident":</span> <span class="tag-value">null</span>,
+                              <span class="tag-name">"founded_year":</span> <span class="tag-value">1946</span>,
+                              <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                                  <span class="tag-name">{</span>
+                                      <span class="tag-name">"department_name":</span> <span class="tag-value">null</span>,
+                                      <span class="tag-name">"department_address":</span> <span class="tag-value">null</span>
+                                  <span class="tag-name">}</span>
+                              <span class="tag-name">]</span>
+                          <span class="tag-name">}</span>
+                      <span class="tag-name">]</span>
+                  <span class="tag-name">},</span>
+                  <span class="tag-name">{</span>
+                    <span class="tag-name">"_key":</span> <span class="tag-value">"1395"</span>,
+                    <span class="tag-name">"_id":</span> <span class="tag-value">"sample/1395"</span>,
+                    <span class="tag-name">"_rev":</span> <span class="tag-value">"_g1BqrHa---"</span>,
+                    <span class="tag-name">"customers":</span> <span class="tag-name">[</span>
+                        <span class="tag-name">{</span>
+                            <span class="tag-name">"company_name":</span> <span class="tag-value">"Netflix"</span>,
+                            <span class="tag-name">"key_person":</span> <span class="tag-value">"Reed Hastings"</span>,
+                            <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                            <span class="tag-name">"founded_year":</span> <span class="tag-value">1997</span>,
+                            <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                                <span class="tag-name">{</span>
+                                    <span class="tag-name">"department_name":</span> <span class="tag-value">"Content Production"</span>,
+                                    <span class="tag-name">"department_address":</span> <span class="tag-value">"123 Entertainment Ave, Los Gatos, CA 95032, USA"</span>
+                                <span class="tag-name">}</span>
+                            <span class="tag-name">]</span>
+                        <span class="tag-name">}</span>,
+                        <span class="tag-name">{</span>
+                            <span class="tag-name">"company_name":</span> <span class="tag-value">"SpaceX"</span>,
+                            <span class="tag-name">"key_person":</span> <span class="tag-value">"Elon Musk"</span>,
+                            <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                            <span class="tag-name">"founded_year":</span> <span class="tag-value">2002</span>,
+                            <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                                <span class="tag-name">{</span>
+                                    <span class="tag-name">"department_name":</span> <span class="tag-value">"Space Exploration"</span>,
+                                    <span class="tag-name">"department_address":</span> <span class="tag-value">"1 Rocket Road Hawthorne, CA 90250, USA"</span>
+                                <span class="tag-name">}</span>,
+                                <span class="tag-name">{</span>
+                                    <span class="tag-name">"department_name":</span> <span class="tag-value">"Starlink"</span>,
+                                    <span class="tag-name">"department_address":</span> <span class="tag-value">"123 SpaceX Blvd, Hawthorne, CA 90250, USA"</span>
+                                <span class="tag-name">}</span>
+                            <span class="tag-name">]</span>
+                        <span class="tag-name">}</span>,
+                        <span class="tag-name">{</span>
+                            <span class="tag-name">"company_name":</span> <span class="tag-value">"Amazon Web Services"</span>,
+                            <span class="tag-name">"key_person":</span> <span class="tag-value">"Andy Jassy"</span>,
+                            <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                            <span class="tag-name">"founded_year":</span> <span class="tag-value">2006</span>,
+                            <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                                <span class="tag-name">{</span>
+                                    <span class="tag-name">"department_name":</span> <span class="tag-value">"Cloud Services"</span>,
+                                    <span class="tag-name">"department_address":</span> <span class="tag-value">"Toyota-cho, Toyota City, Aichi Prefecture 471-8571, Japan"</span>
+                                <span class="tag-name">}</span>,
+                                <span class="tag-name">{</span>
+                                    <span class="tag-name">"department_name":</span> <span class="tag-value">"AI and Machine Learning"</span>,
+                                    <span class="tag-name">"department_address":</span> <span class="tag-value">"345 Park Ave, San Jose, CA 95110, USA"</span>
+                                <span class="tag-name">}</span>
+                            <span class="tag-name">]</span>
+                        <span class="tag-name">}</span>,
+                        <span class="tag-name">{</span>
+                            <span class="tag-name">"company_name":</span> <span class="tag-value">"Toyota"</span>,
+                            <span class="tag-name">"key_person":</span> <span class="tag-value">"Akio Toyoda"</span>,
+                            <span class="tag-name">"usa_resident":</span> <span class="tag-value">false</span>,
+                            <span class="tag-name">"founded_year":</span> <span class="tag-value">1937</span>,
+                            <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                                <span class="tag-name">{</span>
+                                    <span class="tag-name">"department_name":</span> <span class="tag-value">"Research and Development"</span>,
+                                    <span class="tag-name">"department_address":</span> <span class="tag-value">"234 Adobe Way, San Jose, CA 95110, USA"</span>
+                                <span class="tag-name">}</span>
+                            <span class="tag-name">]</span>
+                        <span class="tag-name">}</span>,
+                        <span class="tag-name">{</span>
+                            <span class="tag-name">"company_name":</span> <span class="tag-value">"Adobe Systems"</span>,
+                            <span class="tag-name">"key_person":</span> <span class="tag-value">"Shantanu Narayen"</span>,
+                            <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                            <span class="tag-name">"founded_year":</span> <span class="tag-value">1982</span>,
+                            <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                                <span class="tag-name">{</span>
+                                    <span class="tag-name">"department_name":</span> <span class="tag-value">"Software Development"</span>,
+                                    <span class="tag-name">"department_address":</span> <span class="tag-value">null</span>
+                                <span class="tag-name">}</span>,
+                                <span class="tag-name">{</span>
+                                    <span class="tag-name">"department_name":</span> <span class="tag-value">"Marketing"</span>,
+                                    <span class="tag-name">"department_address":</span> <span class="tag-value">null</span>
+                                <span class="tag-name">}</span>
+                            <span class="tag-name">]</span>
+                        <span class="tag-name">}</span>
+                    <span class="tag-name">]</span>
+                <span class="tag-name">},</span>
+                <span class="tag-name">{</span>
+                  <span class="tag-name">"_key":</span> <span class="tag-value">"1397"</span>,
+                  <span class="tag-name">"_id":</span> <span class="tag-value">"sample/1397"</span>,
+                  <span class="tag-name">"_rev":</span> <span class="tag-value">"_g1BqrLG---"</span>,
+                  <span class="tag-name">"customers":</span> <span class="tag-name">[</span>
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Volkswagen Group"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Herbert Diess"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">false</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1937</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Volkswagen Passenger Cars"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"Berliner Ring 2, 38440 Wolfsburg, Germany"</span>
+                              <span class="tag-name">}</span>,
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Audi"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"Auto-Union-Str. 1, 85045 Ingolstadt, Germany"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>,
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Unilever"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Alan Jope"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">false</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1930</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Unilever Food Solutions"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"Rotterdam, Netherlands"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>,
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Nestle"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Ulf Mark Schneider"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">false</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1866</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Nestle Waters"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"50 Rue Carnot, 92240 Malakoff, France"</span>
+                              <span class="tag-name">}</span>,
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Nestle Purina PetCare"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"50 Avenue de La Couronne, 1050 Ixelles, Belgium"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>,
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Siemens"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Roland Busch"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">false</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1847</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Siemens Energy"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"Werner-von-Siemens-Str. 1, 80333 Munich, Germany"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>,
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Philips"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Frans van Houten"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">false</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1891</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Healthcare"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"Amstelplein 2, 1096 BC Amsterdam, Netherlands"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>
+                  <span class="tag-name">]</span>
+                <span class="tag-name">},</span>
+                <span class="tag-name">{</span>
+                  <span class="tag-name">"_key":</span> <span class="tag-value">"1399"</span>,
+                  <span class="tag-name">"_id":</span> <span class="tag-value">"sample/1399"</span>,
+                  <span class="tag-name">"_rev":</span> <span class="tag-value">"_g1BqrNu---"</span>,
+                  <span class="tag-name">"customers":</span> <span class="tag-name">[</span>
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Apple Inc."</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Tim Cook"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1976</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Software Engineering"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"1 Apple Park Way, Cupertino, CA, USA"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>,
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Microsoft Corporation"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Satya Nadella"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1975</span>
+                      <span class="tag-name">}</span>,
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Amazon.com Inc."</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Andy Jassy"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1994</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Amazon Web Services"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"410 Terry Ave N, Seattle, WA, USA"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>,
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Samsung Group"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Lee Kun-hee"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">false</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1938</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Samsung Electronics"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"129 Samsung-ro, Su-dong, Yeongtong-gu, Suwon-si, Gyeonggi-do, South Korea"</span>
+                              <span class="tag-name">}</span>,
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Samsung Heavy Industries"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"508, Maegok-dong, Changwon, South Korea"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>
+                  <span class="tag-name">]</span>
+                <span class="tag-name">},</span>
+                <span class="tag-name">{</span>
+                  <span class="tag-name">"_key":</span> <span class="tag-value">"1401"</span>,
+                  <span class="tag-name">"_id":</span> <span class="tag-value">"sample/1401"</span>,
+                  <span class="tag-name">"_rev":</span> <span class="tag-value">"_g1BqrQS---"</span>,
+                  <span class="tag-name">"customers":</span> <span class="tag-name">[</span>
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Tesla"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Elon Musk"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">2003</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Tesla Engineering"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"1501 Page Mill Road Palo Alto, Framingham, USA"</span>
+                              <span class="tag-name">}</span>,
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Gigafactory Texas"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"1 Tesla Road Austin, TX 78725, USA"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>,
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Boston Dynamics"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Robert Playter"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">true</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1992</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Headquarters"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"200 Smith St, Waltham, USA"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>,
+                      <span class="tag-name">{</span>
+                          <span class="tag-name">"company_name":</span> <span class="tag-value">"Bank of Korea"</span>,
+                          <span class="tag-name">"key_person":</span> <span class="tag-value">"Kim Seong Tae"</span>,
+                          <span class="tag-name">"usa_resident":</span> <span class="tag-value">false</span>,
+                          <span class="tag-name">"founded_year":</span> <span class="tag-value">1950</span>,
+                          <span class="tag-name">"departments":</span> <span class="tag-name">[</span>
+                              <span class="tag-name">{</span>
+                                  <span class="tag-name">"department_name":</span> <span class="tag-value">"Main Department"</span>,
+                                  <span class="tag-name">"department_address":</span> <span class="tag-value">"67, Sejong-daero, Jung-gu, Seoul, South Korea"</span>
+                              <span class="tag-name">}</span>
+                          <span class="tag-name">]</span>
+                      <span class="tag-name">}</span>
+                  <span class="tag-name">]</span>
+                <span class="tag-name">}</span>
+                ]
+                </code>
+              </pre>
+              
+        
+          </div>
+          
+        </section>
+      </article>
+    </main>
+    <include src="/components/footer.html"></include>
+</body>
+</html>
